@@ -84,6 +84,10 @@ agentctl hub generate --type <skills|docs> --path <hub-directory> --output index
 
 **Hub config**: `~/.agentctl/config.json`
 
+**Schema**: [agentctl-config.json](https://github.com/geronimo-iia/agent-foundation/blob/main/schemas/agentctl-config.json)
+
+**Specification**: [Hub Configuration](https://github.com/geronimo-iia/agent-foundation/blob/main/docs/hub-configuration.md)
+
 ```json
 {
   "skill_hubs": [
@@ -111,6 +115,8 @@ agentctl hub generate --type <skills|docs> --path <hub-directory> --output index
 
 - [Skill Hub Specification](https://github.com/geronimo-iia/agent-foundation/blob/main/skills/hub.md)
 - [Doc Hub Specification](https://github.com/geronimo-iia/agent-foundation/blob/main/docs/hub.md)
+- [Hub Configuration](https://github.com/geronimo-iia/agent-foundation/blob/main/docs/hub-configuration.md)
+- [Hub Config Schema](https://github.com/geronimo-iia/agent-foundation/blob/main/schemas/agentctl-config.json)
 - [Skills Index Schema](https://github.com/geronimo-iia/agent-foundation/blob/main/schemas/skills-index.json)
 - [Docs Index Schema](https://github.com/geronimo-iia/agent-foundation/blob/main/schemas/docs-index.json)
 - [Skills Lock Schema](https://github.com/geronimo-iia/agent-foundation/blob/main/schemas/skills-lock.json)
