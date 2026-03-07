@@ -142,8 +142,8 @@ Linux ARM64 cross-compilation requires `cross` (Docker-based) or `cross-rs/cross
 - [x] Create GitHub repo, push code (`git@github.com:geronimo-iia/agentctl.git`)
 - [x] Add `CARGO_TOKEN` secret (crates.io → Account Settings → API Tokens)
 - [x] CI passes on `main` (fmt, clippy, tests, audit)
-- [ ] Tag `v0.1.0` → triggers release workflow → binaries + crates.io publish
-- [ ] Create `homebrew-agent` repo with `agentctl.rb` (after `v0.1.0` release tarball SHA256 is available)
+- [x] Tag `v0.1.0` → triggers release workflow → binaries + crates.io publish
+- [x] Create `homebrew-agent` repo with `agentctl.rb` (`brew tap geronimo-iia/agent`)
 
 ### homebrew-agent setup
 
