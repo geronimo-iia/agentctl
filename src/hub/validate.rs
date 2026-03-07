@@ -242,7 +242,11 @@ mod tests {
         // create a valid skill dir
         let skill_dir = dir.path().join("my-skill");
         fs::create_dir(&skill_dir).unwrap();
-        fs::write(skill_dir.join("SKILL.md"), "---\nname: my-skill\ndescription: test\n---\n").unwrap();
+        fs::write(
+            skill_dir.join("SKILL.md"),
+            "---\nname: my-skill\ndescription: test\n---\n",
+        )
+        .unwrap();
         // create a hidden dir that should be ignored
         let git_dir = dir.path().join(".git");
         fs::create_dir(&git_dir).unwrap();
