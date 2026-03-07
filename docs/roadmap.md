@@ -139,8 +139,9 @@ Linux ARM64 cross-compilation requires `cross` (Docker-based) or `cross-rs/cross
 - [x] CI workflows: `ci.yml`, `release.yml` with all 5 targets
 - [x] `cargo audit` passes with no vulnerabilities (124 dependencies scanned)
 - [x] `hub validate --type skills` tested with local fixtures (valid + invalid + `.git` ignored)
-- [ ] Create GitHub repo, push code
-- [ ] Add `CARGO_TOKEN` secret (crates.io → Account Settings → API Tokens)
+- [x] Create GitHub repo, push code (`git@github.com:geronimo-iia/agentctl.git`)
+- [x] Add `CARGO_TOKEN` secret (crates.io → Account Settings → API Tokens)
+- [x] CI passes on `main` (fmt, clippy, tests, audit)
 - [ ] Tag `v0.1.0` → triggers release workflow → binaries + crates.io publish
 - [ ] Create `homebrew-agent` repo with `agentctl.rb` (after `v0.1.0` release tarball SHA256 is available)
 
