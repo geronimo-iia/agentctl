@@ -17,3 +17,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and 
 - Exit code 0/1 for CI use
 - Cross-platform release binaries: Linux x86_64/ARM64, macOS x86_64/ARM64, Windows x86_64
 - 10 tests: unit + integration, all using local fixtures
+- Dependabot configured for Cargo and GitHub Actions (weekly)
+
+### Fixed
+
+- Clippy `bool_comparison` warning in hidden directory filter (`== false` → `!`)

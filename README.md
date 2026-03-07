@@ -44,6 +44,37 @@ agentctl --help
 agentctl hub --help
 ```
 
+### Validation output
+
+On success:
+```
+✓ Validation passed
+```
+
+On failure (exit code 1):
+```
+  ✗ skills/my-skill/SKILL.md:1: missing required field: name
+  ✗ skills/my-skill/SKILL.md:1: missing required field: description
+✗ Validation failed (2 error(s))
+```
+
+### Generated index.json (skills)
+
+```json
+{
+  "hub_id": "my-hub",
+  "generated_at": "2026-07-14T10:00:00Z",
+  "skills": [
+    {
+      "name": "python-scaffold",
+      "description": "Scaffold a Python project",
+      "path": "python-scaffold",
+      "commit_hash": "abc1234"
+    }
+  ]
+}
+```
+
 ## CI Integration
 
 Example GitHub Actions workflow for a docs or skills hub:
