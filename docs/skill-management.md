@@ -17,10 +17,13 @@ agentctl skill install <hub_id:slug> --as <custom-name>
 1. Fetch hub's cached `index.json`
 2. Locate skill entry by slug
 3. Sparse-clone hub repo at pinned commit
-4. Copy skill directory to `~/.agentctl/skills/<slug>/`
-5. Validate `SKILL.md` frontmatter per [authoring-guide.md](https://github.com/geronimo-iia/agent-foundation/blob/main/skills/authoring-guide.md)
-6. Check `requires` gate (warn only)
-7. Add entry to `skills.lock.json` per [skills-lock.json schema](https://github.com/geronimo-iia/agent-foundation/blob/main/schemas/skills-lock.json)
+4. Copy skill directory to `~/.agentctl/skills/<slug>/` (SKILL.md, references/, assets/ only)
+5. If skill includes `assets/*.wasm` files, register as MCP servers
+6. Validate `SKILL.md` frontmatter per [authoring-guide.md](https://github.com/geronimo-iia/agent-foundation/blob/main/skills/authoring-guide.md)
+7. Check `requires` gate (warn only, do not install dependencies)
+8. Add entry to `skills.lock.json` per [skills-lock.json schema](https://github.com/geronimo-iia/agent-foundation/blob/main/schemas/skills-lock.json)
+
+**No custom install scripts**: Skills are declarative only. System dependencies in `requires` are checked but not installed.
 
 **Conflict handling**: See [Conflict Resolution](https://github.com/geronimo-iia/agent-foundation/blob/main/skills/lifecycle.md#conflict-resolution)
 
@@ -35,8 +38,9 @@ agentctl skill uninstall <local-name>
 
 **Process**:
 1. Confirm with user
-2. Remove directory
-3. Remove lock file entry (if hub skill)
+2. Unregister any bundled MCP servers (from `assets/*.wasm`)
+3. Remove directory
+4. Remove lock file entry (if hub skill)
 
 ### Update
 
