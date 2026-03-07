@@ -2,11 +2,17 @@
 name = "agent-ctl"
 version = "0.1.0"
 edition = "2021"
+rust-version = "1.75"
 authors = ["Jerome Guibert <jguibert@gmail.com>"]
 description = "CLI for agent hub validation, index generation, and skill management"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/geronimo-iia/agentctl"
+homepage = "https://github.com/geronimo-iia/agentctl"
+documentation = "https://github.com/geronimo-iia/agentctl#readme"
 readme = "README.md"
+keywords = ["cli", "agent", "hub", "validation"]
+categories = ["command-line-utilities", "development-tools"]
+exclude = [".github/", "tests/fixtures/", "docs/"]
 
 [[bin]]
 name = "agentctl"
