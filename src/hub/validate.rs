@@ -39,7 +39,7 @@ pub fn validate_skills_hub(path: &Path) -> Result<ValidationResult> {
                 return false;
             }
             // skip hidden directories (e.g. .git)
-            e.file_name().to_string_lossy().starts_with('.') == false
+            !e.file_name().to_string_lossy().starts_with('.')
         })
         .collect();
 
