@@ -6,6 +6,20 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and 
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-07-15
+
+### Added
+
+- `skills_root` field in `~/.agentctl/config.json` — configurable install root, supports `~` expansion (default: `~/.agent/skills`)
+- `src/lib.rs` — library target exposing `skill`, `config`, `hub` modules for integration tests
+- `tests/lifecycle_integration.rs` — 3 end-to-end tests using `sh_executor` against real temp dirs (install/update/uninstall round-trip, `--force` reinstall, no-update-section error)
+
+### Fixed
+
+- `skill update` loaded `LockFile` twice — now loads once as `mut` at the top
+- `skill install` used hardcoded TTL of 6h — now uses `hub.ttl_hours`
+- `LockFile` missing `Default` impl — added to satisfy clippy `new_without_default`
+
 ## [0.3.0] - 2026-07-15
 
 ### Added
