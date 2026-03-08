@@ -285,6 +285,7 @@ Add to `Cargo.toml`: `ureq = { version = "2", features = ["json"] }`, `toml = "0
 - [ ] Default exclusion list applied when no `agentctl.toml`
 - [ ] CLI flags take precedence over `agentctl.toml` values
 - [ ] `~/.agentctl/config.json` read/write working
+- [ ] Remove `#[allow(dead_code)]` from `src/config.rs` once wired into registry commands
 - [ ] Index cache with TTL at `~/.agentctl/cache/hubs/<id>/index.json`
 - [ ] Tests for registry commands, `agentctl.toml` loading, default exclusions, CLI override
 - [ ] `docs/hub-config.md` — `agentctl.toml` format spec and cache design
