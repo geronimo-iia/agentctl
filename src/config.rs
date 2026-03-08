@@ -39,21 +39,11 @@ pub fn config_path() -> PathBuf {
 }
 
 impl Config {
-    #[allow(dead_code)]
-    pub fn load() -> Result<Self> {
-        Self::load_from(&config_path())
-    }
-
     pub fn load_from(path: &std::path::Path) -> Result<Self> {
         if !path.exists() {
             return Ok(Self::default());
         }
         Ok(serde_json::from_str(&std::fs::read_to_string(path)?)?)
-    }
-
-    #[allow(dead_code)]
-    pub fn save(&self) -> Result<()> {
-        self.save_to(&config_path())
     }
 
     pub fn save_to(&self, path: &std::path::Path) -> Result<()> {
