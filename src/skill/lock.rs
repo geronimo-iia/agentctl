@@ -19,6 +19,12 @@ pub struct LockFile {
     pub skills: HashMap<String, LockEntry>,
 }
 
+impl Default for LockFile {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl LockFile {
     pub fn new() -> Self {
         Self {
