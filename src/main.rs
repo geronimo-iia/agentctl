@@ -67,8 +67,83 @@ fn main() -> Result<()> {
                 std::fs::write(&output, json)?;
                 println!("✓ Generated {}", output.display());
             }
+
+            HubAction::Add {
+                r#type,
+                id,
+                index_url,
+                git_url,
+            } => {
+                let kind = hub_kind(r#type);
+                hub::registry::add(
+                    &config::config_path(),
+                    kind,
+                    &id,
+                    &index_url,
+                    git_url.as_deref(),
+                )?;
+                println!("✓ Added hub '{id}'");
+            }
+
+            HubAction::List => {
+                let cfg = config::Config::load()?;
+                println!("Skill hubs:");
+                for h in &cfg.skill_hubs {
+                    println!(
+                        "  {} [{}] {}",
+                        h.id,
+                        if h.enabled { "enabled" } else { "disabled" },
+                        h.index_url
+                    );
+                }
+                println!("Doc hubs:");
+                for h in &cfg.doc_hubs {
+                    println!(
+                        "  {} [{}] {}",
+                        h.id,
+                        if h.enabled { "enabled" } else { "disabled" },
+                        h.index_url
+                    );
+                }
+            }
+
+            HubAction::Remove { r#type, id } => {
+                hub::registry::remove(&config::config_path(), hub_kind(r#type), &id)?;
+                println!("✓ Removed hub '{id}'");
+            }
+
+            HubAction::Enable { r#type, id } => {
+                hub::registry::set_enabled(&config::config_path(), hub_kind(r#type), &id, true)?;
+                println!("✓ Enabled hub '{id}'");
+            }
+
+            HubAction::Disable { r#type, id } => {
+                hub::registry::set_enabled(&config::config_path(), hub_kind(r#type), &id, false)?;
+                println!("✓ Disabled hub '{id}'");
+            }
+
+            HubAction::Refresh { id } => {
+                let path = config::config_path();
+                match id {
+                    Some(id) => {
+                        hub::registry::refresh_one(&path, &id)?;
+                        println!("✓ Refreshed hub '{id}'");
+                    }
+                    None => {
+                        hub::registry::refresh_all(&path)?;
+                        println!("✓ Refreshed all enabled hubs");
+                    }
+                }
+            }
         },
     }
 
     Ok(())
+}
+
+fn hub_kind(t: HubType) -> hub::registry::HubKind {
+    match t {
+        HubType::Skills => hub::registry::HubKind::Skill,
+        HubType::Docs => hub::registry::HubKind::Doc,
+    }
 }

@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use std::path::PathBuf;
 
 use anyhow::Result;
@@ -52,6 +50,7 @@ impl Config {
         Ok(serde_json::from_str(&std::fs::read_to_string(path)?)?)
     }
 
+    #[allow(dead_code)]
     pub fn save(&self) -> Result<()> {
         self.save_to(&config_path())
     }
