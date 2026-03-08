@@ -290,10 +290,10 @@ Add to `Cargo.toml`: `ureq = { version = "2", features = ["json"] }`, `toml = "0
 - [x] Index cache with TTL at `~/.agentctl/cache/hubs/<id>/index.json`
 - [x] Tests for registry commands, `agentctl.toml` loading, default exclusions, CLI override
 - [x] 28 unit tests + 13 integration tests passing
-- [ ] `docs/hub-config.md` — `agentctl.toml` format spec and cache design
-- [ ] `README.md` updated with `agentctl.toml` section and example
-- [ ] Example `agentctl.toml` committed to `agent-foundation` and `agent-skills` repos
-- [ ] `cargo fmt`, `cargo clippy -- -D warnings`, `cargo audit` pass
+- [x] `docs/hub-config.md` — `agentctl.toml` format spec and cache design
+- [x] `README.md` updated with `agentctl.toml` section and example
+- [x] Example `agentctl.toml` committed to `agent-foundation` and `agent-skills` repos
+- [x] `cargo fmt`, `cargo clippy -- -D warnings`, `cargo audit` pass
 - [ ] `CHANGELOG.md` updated, tag `v0.2.0` → release
 
 ---

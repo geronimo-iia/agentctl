@@ -92,13 +92,16 @@ agentctl hub refresh                    # refresh all enabled hubs
 
 ## agentctl.toml
 
-Optional file at the hub root to set the hub ID and ignore patterns:
+Optional file at the hub root. When present, values are used as defaults; CLI flags always take precedence.
 
 ```toml
 [hub]
-id = "agent-foundation"
+id = "agent-foundation"  # overrides --hub-id on generate
 
 [generate]
+# Replaces the default exclusion list when present.
+# Matched case-insensitively against filename only (not path).
+# Supports a single * wildcard anywhere in the pattern.
 ignore = [
   "README.md",
   "CHANGELOG.md",
@@ -108,7 +111,9 @@ ignore = [
 ]
 ```
 
-CLI flags take precedence over `agentctl.toml` values. See [docs/hub-config.md](docs/hub-config.md) for full details.
+When `agentctl.toml` is absent or has no `[generate] ignore` key, the default exclusions apply: `README.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, `LICENSE*`, `ARCHIVED.md`.
+
+See [docs/hub-config.md](docs/hub-config.md) for full details including cache layout and TTL behaviour.
 
 ## CI Integration
 
