@@ -28,3 +28,7 @@ docs: update README install instructions
 - One concern per PR
 - All CI checks must pass (`fmt`, `clippy`, `test`, `audit`)
 - Update `CHANGELOG.md` under `[Unreleased]`
+
+## Releases
+
+For maintainers releasing new versions, follow the complete [release process](docs/release.md).

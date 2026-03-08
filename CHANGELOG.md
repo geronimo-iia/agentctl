@@ -6,6 +6,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and 
 
 ## [Unreleased]
 
+### Added
+
+- `docs/release.md` — comprehensive release checklist covering pre-release, release, and post-release tasks
+- Release process documentation references in roadmap and contributing guide
+
+### Changed
+
+- Updated roadmap Phase 5 exit criteria to reference release process documentation
+- Added "Releases" section to CONTRIBUTING.md with link to release process for maintainers
+
 ## [0.4.1] - 2026-07-16
 
 ### Added

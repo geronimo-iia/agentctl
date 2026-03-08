@@ -557,9 +557,96 @@ ignore = [
 
 ---
 
-## Phase 5 — Doc Hub & MCP Management
+## Phase 5 — Enhanced Skill Management
 
-Covered in [hub-management.md](hub-management.md), [mcp-management.md](mcp-management.md), [skill-management.md](skill-management.md).
+**Goal**: Add advanced skill management features for portability and local development.
+
+### Commands
+
+```
+agentctl skill export > skills.lock.json             # export current lock file
+agentctl skill import skills.lock.json              # import and install from lock file
+agentctl skill outdated                             # list outdated skills
+agentctl skill dev <path>                           # link local skill for development
+```
+
+### Implementation
+
+**Import/Export**:
+- Export copies existing `skills.lock.json` to stdout
+- Import installs all skills from provided lock file
+- Reproducible installs using existing lock file format
+
+**Local development**:
+- Link local skill directories for development
+- Hot-reload skill changes without reinstall
+- Validate local skills against schema
+
+### New modules
+
+- `src/skill/dev.rs` — local development support
+- Extend `src/skill/mod.rs` — export/import and outdated detection
+
+### Steps
+
+1. Implement export/import:
+   - Export command outputs current lock file JSON
+   - Import command reads lock file and installs all listed skills
+   - Handle version conflicts and missing hubs gracefully
+
+2. Add outdated detection:
+   - Compare lock file versions with hub index versions
+   - List skills with newer versions available
+
+3. Add local development support:
+   - Create `src/skill/dev.rs` for local skill linking
+   - Support symlinks to local skill directories
+   - Add validation for local skills
+
+4. Wire CLI:
+   - Extend `SkillAction` enum with new commands
+   - Implement dispatch for all new actions
+   - Add comprehensive help and examples
+
+5. Add comprehensive tests:
+   - Extend `tests/skill_integration.rs` with new features
+   - Add export/import round-trip tests
+   - Test local development workflow
+
+6. Update documentation:
+   - Update `docs/skill-management.md` with new features
+   - Add development workflow guide
+   - Update README with all skill commands
+
+### Exit criteria
+
+- [ ] `agentctl skill export` outputs current lock file JSON to stdout
+- [ ] `agentctl skill import skills.lock.json` installs all skills from lock file
+- [ ] `agentctl skill outdated` lists skills with newer versions available
+- [ ] `agentctl skill dev <path>` links local skill for development
+- [ ] Export/import uses existing lock file format for reproducibility
+- [ ] Local development mode with hot-reload capability
+- [ ] Enhanced `tests/skill_integration.rs` covering all new features
+- [ ] Updated `docs/skill-management.md` with complete feature guide
+- [ ] `README.md` updated with all skill management examples
+- [ ] `cargo fmt`, `cargo clippy -- -D warnings`, `cargo audit` pass
+- [ ] `CHANGELOG.md` updated, tag `v0.5.0` → release per [release process](docs/release.md)
+
+---
+
+## Future Phases (Deferred)
+
+### Phase 6 — MCP Management (If Relevant)
+
+**Status**: Deferred pending MCP ecosystem maturity
+
+**Scope**: WASM-based MCP server management with sandboxing
+
+**Commands**: `agentctl mcp install/list/update/test`
+
+**Implementation**: See [mcp-management.md](mcp-management.md) for detailed specification
+
+**Decision point**: Revisit when MCP WASM ecosystem and security model are established
 
 ---
 
