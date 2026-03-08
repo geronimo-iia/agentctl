@@ -17,7 +17,7 @@ Ship a first version of `agentctl` that covers hub validation and index generati
 
 ---
 
-## Phase 1 — Hub Validate & Generate (MVP)
+## Phase 1 — Hub Validate & Generate (MVP) ✅ DONE
 
 **Goal**: Parity with `agent-hub-indexer` as a Rust binary. This is the gate before publishing hubs.
 
@@ -206,23 +206,95 @@ agentctl hub list
 agentctl hub remove <id>
 agentctl hub enable <id>
 agentctl hub disable <id>
-agentctl hub refresh [<id>]
+agentctl hub refresh [<id>|--all]
 ```
 
 ### Scope
 
+- Per-hub `agentctl.toml` config file — `hub_id`, ignore patterns, overrides CLI flags when present
 - Config file at `~/.agentctl/config.json` (skill_hubs + doc_hubs arrays)
 - Index cache at `~/.agentctl/cache/hubs/<id>/index.json` with TTL (default 6h)
 - Auto-detect hub type from `index.json` `type` field
-- HTTP fetch via `reqwest`
+- HTTP fetch via `ureq` (synchronous — no async runtime needed for a CLI tool)
+- Stale cache used with warning when network unavailable
+- `hub refresh` with no args or `--all` refreshes all enabled hubs
+
+### agentctl.toml (per-hub)
+
+Optional file at hub root. CLI flags take precedence over file values.
+
+```toml
+[hub]
+id = "agent-foundation"  # overrides --hub-id
+
+[generate]
+# Replaces default exclusion list when present
+ignore = [
+  "README.md",
+  "CHANGELOG.md",
+  "CONTRIBUTING.md",
+  "ARCHIVED.md",
+  "draft-*.md",
+]
+```
+
+**Default exclusions** (applied when no `agentctl.toml` or no `[generate] ignore` key):
+```
+README.md, CHANGELOG.md, CONTRIBUTING.md, LICENSE*, ARCHIVED.md
+```
+
+Matching is case-insensitive on filename only. Applies to both validate and generate.
+
+### Index cache design
+
+Filesystem-based TTL — no daemon, no background process.
+
+**Layout:**
+```
+~/.agentctl/cache/hubs/<id>/
+├── index.json     # cached hub index
+└── fetched_at     # RFC3339 timestamp of last successful fetch
+```
+
+**On any command that needs the index** (search, install, refresh):
+1. Read `fetched_at` — if missing or age > `ttl_hours`, fetch `index_url` and overwrite both files
+2. Fetch fails + `index.json` exists → use stale cache, print warning to stderr
+3. Fetch fails + no cache → error out
+
+**`hub refresh [<id>|--all]`** — forces fetch regardless of TTL
+
+**`hub add`** — fetches immediately to validate `index_url` is reachable and `type` field is valid
 
 ### New modules
 
+- `src/hub/config.rs` — read `agentctl.toml` from hub root (hub_id, ignore patterns)
 - `src/config.rs` — read/write `~/.agentctl/config.json`
 - `src/hub/registry.rs` — add/list/remove/enable/disable
 - `src/hub/cache.rs` — TTL-based index caching
 
-Add to `Cargo.toml`: `reqwest = { version = "0.11", features = ["json"] }`, `tokio = { version = "1.0", features = ["full"] }`
+Add to `Cargo.toml`: `ureq = { version = "2", features = ["json"] }`, `toml = "0.8"`
+
+**Rationale**: `ureq` is synchronous, no `tokio` runtime, compiles fast, keeps binary small. A CLI tool runs one command and exits — async adds no value here.
+
+### Exit criteria
+
+- [x] `agentctl hub add/list/remove/enable/disable` implemented and tested
+- [x] `agentctl hub refresh [<id>|--all]` implemented — refreshes one or all enabled hubs
+- [x] Stale cache used with warning when network unavailable
+- [x] `agentctl.toml` read at hub root — `hub_id` and `ignore` respected by validate + generate
+- [x] Default exclusion list applied when no `agentctl.toml`
+- [x] CLI flags take precedence over `agentctl.toml` values
+- [x] `~/.agentctl/config.json` read/write working
+- [x] `--config` flag added for test isolation and explicit config path override
+- [x] No dead code — `Config::load`/`save` wrappers removed, all `#[allow(dead_code)]` eliminated
+- [x] Index cache with TTL at `~/.agentctl/cache/hubs/<id>/index.json`
+- [x] Tests for registry commands, `agentctl.toml` loading, default exclusions, CLI override
+- [x] 28 unit tests + 13 integration tests passing
+- [x] `docs/hub-config.md` — `agentctl.toml` format spec and cache design
+- [x] `README.md` updated with `agentctl.toml` section and example
+- [x] Example `agentctl.toml` committed to `agent-foundation` and `agent-skills` repos
+- [x] `cargo fmt`, `cargo clippy -- -D warnings`, `cargo audit` pass
+- [ ] `CHANGELOG.md` updated, tag `v0.2.0` → release
 
 ---
 

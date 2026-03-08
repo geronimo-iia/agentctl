@@ -4,9 +4,21 @@ use anyhow::Result;
 use chrono::Utc;
 use git2::Repository;
 
+use super::config::HubConfig;
 use super::schema::{DocEntry, DocStatus, DocsIndex, DocsMetadata, SkillEntry, SkillsIndex};
 
-pub fn generate_skills_index(path: &Path, hub_id: &str) -> Result<SkillsIndex> {
+/// Generate skills index. CLI `hub_id_override` takes precedence over `agentctl.toml`.
+pub fn generate_skills_index(path: &Path, hub_id_override: &str) -> Result<SkillsIndex> {
+    let cfg = HubConfig::load(path);
+    let hub_id = if hub_id_override != "default" {
+        hub_id_override.to_string()
+    } else {
+        cfg.hub
+            .id
+            .clone()
+            .unwrap_or_else(|| hub_id_override.to_string())
+    };
+
     let repo = Repository::discover(path)?;
     let git_url = remote_url(&repo);
     let mut skills = Vec::new();
@@ -14,6 +26,14 @@ pub fn generate_skills_index(path: &Path, hub_id: &str) -> Result<SkillsIndex> {
     for entry in std::fs::read_dir(path)?.filter_map(|e| e.ok()) {
         let skill_dir = entry.path();
         if !skill_dir.is_dir() {
+            continue;
+        }
+        if skill_dir
+            .file_name()
+            .and_then(|n| n.to_str())
+            .map(|n| n.starts_with('.'))
+            .unwrap_or(false)
+        {
             continue;
         }
         let skill_md = skill_dir.join("SKILL.md");
@@ -59,18 +79,19 @@ pub fn generate_skills_index(path: &Path, hub_id: &str) -> Result<SkillsIndex> {
     }
 
     Ok(SkillsIndex {
-        hub_id: hub_id.to_string(),
+        hub_id,
         generated_at: Utc::now().to_rfc3339(),
         skills,
     })
 }
 
 pub fn generate_docs_index(path: &Path) -> Result<DocsIndex> {
+    let cfg = HubConfig::load(path);
     let repo = Repository::discover(path)?;
     let repo_commit = head_commit_hash(&repo);
     let mut entries = Vec::new();
 
-    for file in glob_md_files(path) {
+    for file in glob_md_files(path, &cfg) {
         let content = std::fs::read_to_string(&file)?;
         if !content.starts_with("---") {
             continue;
@@ -178,16 +199,16 @@ fn remote_url(repo: &Repository) -> String {
         .unwrap_or_default()
 }
 
-fn glob_md_files(path: &Path) -> Vec<std::path::PathBuf> {
+fn glob_md_files(path: &Path, cfg: &HubConfig) -> Vec<std::path::PathBuf> {
     let mut files = Vec::new();
     if let Ok(entries) = std::fs::read_dir(path) {
         for entry in entries.filter_map(|e| e.ok()) {
             let p = entry.path();
             if p.is_dir() {
-                files.extend(glob_md_files(&p));
+                files.extend(glob_md_files(&p, cfg));
             } else if p.extension().and_then(|e| e.to_str()) == Some("md") {
                 let name = p.file_name().and_then(|n| n.to_str()).unwrap_or("");
-                if name.to_uppercase() != "README.MD" {
+                if !cfg.is_ignored(name) {
                     files.push(p);
                 }
             }

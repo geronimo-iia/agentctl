@@ -1,0 +1,9 @@
+{
+  "skill_hubs": [
+    {
+      "id": "minimal-hub",
+      "index_url": "https://example.com/index.json"
+    }
+  ],
+  "doc_hubs": []
+}

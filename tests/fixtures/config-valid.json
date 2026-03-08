@@ -1,0 +1,19 @@
+{
+  "skill_hubs": [
+    {
+      "id": "agent-foundation",
+      "index_url": "https://raw.githubusercontent.com/geronimo-iia/agent-foundation/main/skills/index.json",
+      "git_url": "https://github.com/geronimo-iia/agent-foundation",
+      "enabled": true,
+      "ttl_hours": 12
+    }
+  ],
+  "doc_hubs": [
+    {
+      "id": "agent-docs",
+      "index_url": "https://raw.githubusercontent.com/geronimo-iia/agent-foundation/main/docs/index.json",
+      "enabled": false,
+      "ttl_hours": 6
+    }
+  ]
+}
