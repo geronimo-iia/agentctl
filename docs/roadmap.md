@@ -396,10 +396,10 @@ Refactor `hub_integration.rs` to use `common::*` as first step of Phase 3.
 
 ### Exit criteria
 
-- [ ] `tests/common/mod.rs` extracted, `hub_integration.rs` refactored
-- [ ] `src/skill/vars.rs` — variable resolution with unit tests (built-ins, custom, forward-ref error)
-- [ ] `src/skill/lifecycle.rs` — parse, platform filter, approval injection, `quiet` flag, execution
-- [ ] `src/skill/lock.rs` — read/write lock file with tests
+- [x] `tests/common/mod.rs` extracted, `hub_integration.rs` refactored
+- [x] `src/skill/vars.rs` — variable resolution with unit tests (built-ins, custom, forward-ref error)
+- [x] `src/skill/lifecycle.rs` — parse, platform filter, approval injection, `quiet` flag, execution
+- [x] `src/skill/lock.rs` — read/write lock file with tests
 - [ ] `agentctl skill install/list/remove/update` implemented and tested
 - [ ] `--quiet` global flag — suppresses output, implies `--yes`
 - [ ] `--yes` global flag — auto-approves all steps, output visible
