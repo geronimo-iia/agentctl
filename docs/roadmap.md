@@ -245,6 +245,26 @@ README.md, CHANGELOG.md, CONTRIBUTING.md, LICENSE*, ARCHIVED.md
 
 Matching is case-insensitive on filename only. Applies to both validate and generate.
 
+### Index cache design
+
+Filesystem-based TTL — no daemon, no background process.
+
+**Layout:**
+```
+~/.agentctl/cache/hubs/<id>/
+├── index.json     # cached hub index
+└── fetched_at     # RFC3339 timestamp of last successful fetch
+```
+
+**On any command that needs the index** (search, install, refresh):
+1. Read `fetched_at` — if missing or age > `ttl_hours`, fetch `index_url` and overwrite both files
+2. Fetch fails + `index.json` exists → use stale cache, print warning to stderr
+3. Fetch fails + no cache → error out
+
+**`hub refresh [<id>|--all]`** — forces fetch regardless of TTL
+
+**`hub add`** — fetches immediately to validate `index_url` is reachable and `type` field is valid
+
 ### New modules
 
 - `src/hub/config.rs` — read `agentctl.toml` from hub root (hub_id, ignore patterns)
@@ -265,7 +285,7 @@ Add to `Cargo.toml`: `reqwest = { version = "0.11", features = ["json"] }`, `tok
 - [ ] `~/.agentctl/config.json` read/write working
 - [ ] Index cache with TTL at `~/.agentctl/cache/hubs/<id>/index.json`
 - [ ] Tests for registry commands, `agentctl.toml` loading, default exclusions, CLI override
-- [ ] `docs/hub-config.md` — `agentctl.toml` format spec
+- [ ] `docs/hub-config.md` — `agentctl.toml` format spec and cache design
 - [ ] `README.md` updated with `agentctl.toml` section and example
 - [ ] Example `agentctl.toml` committed to `agent-foundation` and `agent-skills` repos
 - [ ] `cargo fmt`, `cargo clippy -- -D warnings`, `cargo audit` pass
