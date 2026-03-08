@@ -5,7 +5,9 @@ use std::path::{Path, PathBuf};
 use anyhow::{Context, Result};
 use chrono::{DateTime, Duration, Utc};
 
-fn cache_dir(hub_id: &str) -> PathBuf {
+pub type Fetcher = fn(&str) -> Result<String>;
+
+pub fn cache_dir_for(hub_id: &str) -> PathBuf {
     dirs::home_dir()
         .unwrap_or_else(|| PathBuf::from("."))
         .join(".agentctl")
@@ -14,18 +16,27 @@ fn cache_dir(hub_id: &str) -> PathBuf {
         .join(hub_id)
 }
 
-/// Returns cached index JSON, fetching from `index_url` if stale or missing.
-/// On fetch failure, returns stale cache with a warning, or errors if no cache exists.
 pub fn get(hub_id: &str, index_url: &str, ttl_hours: u64) -> Result<String> {
-    get_from(&cache_dir(hub_id), index_url, ttl_hours, hub_id)
+    get_from(
+        &cache_dir_for(hub_id),
+        index_url,
+        ttl_hours,
+        hub_id,
+        http_fetch,
+    )
 }
 
-/// Force-refreshes the cache regardless of TTL.
 pub fn refresh(hub_id: &str, index_url: &str) -> Result<String> {
-    refresh_to(&cache_dir(hub_id), index_url)
+    refresh_to(&cache_dir_for(hub_id), index_url, http_fetch)
 }
 
-pub fn get_from(dir: &Path, index_url: &str, ttl_hours: u64, hub_id: &str) -> Result<String> {
+pub fn get_from(
+    dir: &Path,
+    index_url: &str,
+    ttl_hours: u64,
+    hub_id: &str,
+    fetcher: Fetcher,
+) -> Result<String> {
     let index_path = dir.join("index.json");
     let fetched_at_path = dir.join("fetched_at");
 
@@ -33,7 +44,7 @@ pub fn get_from(dir: &Path, index_url: &str, ttl_hours: u64, hub_id: &str) -> Re
         return Ok(std::fs::read_to_string(&index_path)?);
     }
 
-    match fetch(index_url) {
+    match fetcher(index_url) {
         Ok(body) => {
             std::fs::create_dir_all(dir)?;
             std::fs::write(&index_path, &body)?;
@@ -51,8 +62,8 @@ pub fn get_from(dir: &Path, index_url: &str, ttl_hours: u64, hub_id: &str) -> Re
     }
 }
 
-pub fn refresh_to(dir: &Path, index_url: &str) -> Result<String> {
-    let body = fetch(index_url)?;
+pub fn refresh_to(dir: &Path, index_url: &str, fetcher: Fetcher) -> Result<String> {
+    let body = fetcher(index_url)?;
     std::fs::create_dir_all(dir)?;
     std::fs::write(dir.join("index.json"), &body)?;
     std::fs::write(dir.join("fetched_at"), Utc::now().to_rfc3339())?;
@@ -69,7 +80,7 @@ fn needs_refresh(fetched_at_path: &Path, ttl_hours: u64) -> bool {
     Utc::now() - fetched_at > Duration::hours(ttl_hours as i64)
 }
 
-fn fetch(url: &str) -> Result<String> {
+pub fn http_fetch(url: &str) -> Result<String> {
     ureq::get(url)
         .call()
         .context("HTTP request failed")?
@@ -93,6 +104,17 @@ mod tests {
         let index = std::fs::read_to_string(fixture("cache-index.json")).unwrap();
         std::fs::write(dir.path().join("index.json"), index).unwrap();
         std::fs::write(dir.path().join("fetched_at"), fetched_at).unwrap();
+    }
+
+    fn ok_fetcher(_url: &str) -> Result<String> {
+        Ok(std::fs::read_to_string(
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/cache-index.json"),
+        )
+        .unwrap())
+    }
+
+    fn err_fetcher(_url: &str) -> Result<String> {
+        anyhow::bail!("HTTP request failed")
     }
 
     #[test]
@@ -124,12 +146,19 @@ mod tests {
     }
 
     #[test]
-    fn get_from_returns_fresh_cache_without_fetch() {
+    fn get_from_returns_fresh_cache_without_fetching() {
         let dir = TempDir::new().unwrap();
         seed_cache(&dir, &Utc::now().to_rfc3339());
-        // index_url is unreachable — proves no HTTP call is made
-        let result = get_from(dir.path(), "http://127.0.0.1:0/index.json", 6, "test-hub");
-        assert!(result.is_ok());
+        let result = get_from(dir.path(), "unused", 6, "test-hub", err_fetcher);
+        assert!(result.unwrap().contains("test-hub"));
+    }
+
+    #[test]
+    fn get_from_fetches_when_stale() {
+        let dir = TempDir::new().unwrap();
+        let old = (Utc::now() - Duration::hours(7)).to_rfc3339();
+        seed_cache(&dir, &old);
+        let result = get_from(dir.path(), "unused", 6, "test-hub", ok_fetcher);
         assert!(result.unwrap().contains("test-hub"));
     }
 
@@ -138,16 +167,28 @@ mod tests {
         let dir = TempDir::new().unwrap();
         let old = (Utc::now() - Duration::hours(7)).to_rfc3339();
         seed_cache(&dir, &old);
-        // expired TTL + unreachable URL → should fall back to stale cache
-        let result = get_from(dir.path(), "http://127.0.0.1:0/index.json", 6, "test-hub");
-        assert!(result.is_ok());
+        let result = get_from(dir.path(), "unused", 6, "test-hub", err_fetcher);
         assert!(result.unwrap().contains("test-hub"));
     }
 
     #[test]
     fn get_from_errors_when_no_cache_and_fetch_fails() {
         let dir = TempDir::new().unwrap();
-        let result = get_from(dir.path(), "http://127.0.0.1:0/index.json", 6, "test-hub");
+        let result = get_from(dir.path(), "unused", 6, "test-hub", err_fetcher);
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn refresh_to_writes_cache_on_success() {
+        let dir = TempDir::new().unwrap();
+        refresh_to(dir.path(), "unused", ok_fetcher).unwrap();
+        assert!(dir.path().join("index.json").exists());
+        assert!(dir.path().join("fetched_at").exists());
+    }
+
+    #[test]
+    fn refresh_to_errors_on_fetch_failure() {
+        let dir = TempDir::new().unwrap();
+        assert!(refresh_to(dir.path(), "unused", err_fetcher).is_err());
     }
 }
