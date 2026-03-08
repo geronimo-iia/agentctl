@@ -2,6 +2,8 @@ use std::path::Path;
 
 use anyhow::{bail, Result};
 
+use super::config::HubConfig;
+
 #[derive(Debug)]
 pub struct ValidationError {
     pub file: String,
@@ -84,8 +86,9 @@ pub fn validate_skills_hub(path: &Path) -> Result<ValidationResult> {
 
 pub fn validate_docs_hub(path: &Path) -> Result<ValidationResult> {
     let mut errors = Vec::new();
+    let cfg = HubConfig::load(path);
 
-    let md_files: Vec<_> = glob_md_files(path);
+    let md_files: Vec<_> = glob_md_files(path, &cfg);
 
     if md_files.is_empty() {
         bail!("no .md files found in {}", path.display());
@@ -212,16 +215,16 @@ fn parse_frontmatter(content: &str) -> Result<serde_yaml::Mapping, String> {
     serde_yaml::from_str(parts[1]).map_err(|e| format!("invalid YAML: {e}"))
 }
 
-fn glob_md_files(path: &Path) -> Vec<std::path::PathBuf> {
+fn glob_md_files(path: &Path, cfg: &HubConfig) -> Vec<std::path::PathBuf> {
     let mut files = Vec::new();
     if let Ok(entries) = std::fs::read_dir(path) {
         for entry in entries.filter_map(|e| e.ok()) {
             let p = entry.path();
             if p.is_dir() {
-                files.extend(glob_md_files(&p));
+                files.extend(glob_md_files(&p, cfg));
             } else if p.extension().and_then(|e| e.to_str()) == Some("md") {
                 let name = p.file_name().and_then(|n| n.to_str()).unwrap_or("");
-                if name.to_uppercase() != "README.MD" {
+                if !cfg.is_ignored(name) {
                     files.push(p);
                 }
             }
