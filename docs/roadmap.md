@@ -305,7 +305,6 @@ Add to `Cargo.toml`: `ureq = { version = "2", features = ["json"] }`, `toml = "0
 ### Commands
 
 ```
-agentctl skill search <query>
 agentctl skill install <name> [--hub <id>] [--mode <mode>]
 agentctl skill list
 agentctl skill remove <name>
@@ -314,7 +313,6 @@ agentctl skill update [<name>]
 
 ### Scope
 
-- Search across cached hub indexes
 - Install to `~/.agent/skills/` or `~/.agent/skills-{mode}/`
 - Lock file at `~/.agentctl/skills.lock` (name, version, hub, commit_hash, path)
 - Git clone or sparse checkout for install
