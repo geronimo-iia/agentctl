@@ -367,6 +367,35 @@ tests/
 
 Refactor `hub_integration.rs` to use `common::*` as first step of Phase 3.
 
+### Steps
+
+1. Refactor `tests/hub_integration.rs` — extract `agentctl()`, `fixture()`, `with_config()` to `tests/common/mod.rs`
+2. Implement `src/skill/vars.rs` — built-in + custom variable resolution with unit tests
+3. Implement `src/skill/lifecycle.rs` — parse `lifecycle.yaml`, platform filter, approval prompt, `sh -c` execution
+4. Implement `src/skill/lock.rs` — read/write `~/.agentctl/skills.lock.json`
+5. Implement `src/skill/mod.rs` — `skill install`: resolve hub from cache, sparse-clone at pinned commit, copy skill dir, run lifecycle `install` section, write lock entry
+6. Implement `skill list` — read lock file, print installed skills
+7. Implement `skill remove` — run lifecycle `uninstall` section, remove dir, remove lock entry
+8. Implement `skill update` — compare versions, re-clone at new commit, run lifecycle `update` section, update lock entry
+9. Wire CLI — add `SkillAction` variants to `cli.rs`, dispatch in `main.rs`
+10. Write `tests/skill_integration.rs` — install/list/remove/update using fixtures and injected approver
+11. Update `README.md` — add `skill install/list/remove/update` usage examples
+12. `cargo fmt`, `cargo clippy -- -D warnings`, `cargo audit` pass
+13. Update `CHANGELOG.md`, bump `Cargo.toml` to `0.3.0`, tag `v0.3.0` → release
+
+### Exit criteria
+
+- [ ] `tests/common/mod.rs` extracted, `hub_integration.rs` refactored
+- [ ] `src/skill/vars.rs` — variable resolution with unit tests (built-ins, custom, forward-ref error)
+- [ ] `src/skill/lifecycle.rs` — parse, platform filter, approval injection, execution
+- [ ] `src/skill/lock.rs` — read/write lock file with tests
+- [ ] `agentctl skill install/list/remove/update` implemented and tested
+- [ ] `lifecycle.yaml` executed on install/remove/update with user approval prompt
+- [ ] Lock file written on install, updated on update, removed on uninstall
+- [ ] `README.md` updated with `skill` command usage examples
+- [ ] `cargo fmt`, `cargo clippy -- -D warnings`, `cargo audit` pass
+- [ ] `CHANGELOG.md` updated, tag `v0.3.0` → release
+
 ## Phase 4 — Doc Hub & MCP Management
 
 Covered in [hub-management.md](hub-management.md), [mcp-management.md](mcp-management.md), [skill-management.md](skill-management.md).
