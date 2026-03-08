@@ -28,6 +28,11 @@ pub struct Cli {
 
 #[derive(Subcommand)]
 pub enum Command {
+    /// Manage the local agentctl config file.
+    Config {
+        #[command(subcommand)]
+        action: ConfigAction,
+    },
     /// Manage agent hubs (validate, generate index, registry).
     Hub {
         #[command(subcommand)]
@@ -37,6 +42,32 @@ pub enum Command {
     Skill {
         #[command(subcommand)]
         action: SkillAction,
+    },
+}
+
+#[derive(Subcommand)]
+pub enum ConfigAction {
+    /// Create a default config file if one does not exist.
+    Init {
+        /// Overwrite existing config.
+        #[arg(long)]
+        force: bool,
+    },
+    /// Print the full config as pretty JSON.
+    Show,
+    /// Print the path to the config file.
+    Path,
+    /// Print a single config value.
+    Get {
+        /// Config key (e.g. skills_root).
+        key: String,
+    },
+    /// Set a config value.
+    Set {
+        /// Config key (e.g. skills_root).
+        key: String,
+        /// Value to set.
+        value: String,
     },
 }
 

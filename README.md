@@ -75,6 +75,28 @@ On failure (exit code 1):
 }
 ```
 
+## Config Management
+
+Inspect and modify `~/.agentctl/config.json` without editing JSON by hand.
+
+```bash
+# create a default config file (errors if already exists)
+agentctl config init
+agentctl config init --force   # overwrite existing
+
+# print the config file path
+agentctl config path
+
+# print the full config as pretty JSON
+agentctl config show
+
+# get / set scalar values
+agentctl config get skills_root
+agentctl config set skills_root ~/.agent/skills
+```
+
+**Supported keys**: `skills_root` — overrides the default skill install root. Hub entries are managed via `hub add/remove/enable/disable`.
+
 ## Hub Registry
 
 Register and manage hub sources in `~/.agentctl/config.json`:

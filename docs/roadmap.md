@@ -417,7 +417,64 @@ Refactor `hub_integration.rs` to use `common::*` as first step of Phase 3.
 - [x] `cargo fmt`, `cargo clippy -- -D warnings`, `cargo audit` pass
 - [x] `CHANGELOG.md` updated, tag `v0.3.0` → release
 
-## Phase 4 — Doc Hub & MCP Management
+## Phase 4 — Config Management
+
+**Goal**: Let users inspect and modify `~/.agentctl/config.json` directly without editing JSON by hand.
+
+### Commands
+
+```
+agentctl config init                  # create default config file if missing
+agentctl config show                  # print full config as pretty JSON
+agentctl config path                  # print the config file path
+agentctl config get <key>             # print a single scalar value
+agentctl config set <key> <value>     # set a scalar value
+```
+
+**Supported keys for `get`/`set`**: scalar fields only — `skills_root`. Hub entries are managed via `hub add/remove/enable/disable`.
+
+**`config get` output**: raw value (no quotes), empty string if unset.
+
+**`config init` behaviour**: writes a default (empty) `Config` to `~/.agentctl/config.json` if the file does not exist; exits with an error if it already exists (use `--force` to overwrite).
+
+**`config set` behaviour**: loads existing config, updates the field, saves back. Creates config file if missing.
+
+**`config show` output**: `serde_json::to_string_pretty` — same format as the file on disk.
+
+**`config path` output**: absolute path, even if file does not yet exist.
+
+### New modules
+
+No new modules — all logic lives in `src/config.rs` (already has `load_from`/`save_to`) and dispatch in `main.rs`.
+
+Add `ConfigAction` enum to `cli.rs`; add `Command::Config` variant.
+
+### Steps
+
+1. Add `ConfigAction` variants (`Init`, `Show`, `Path`, `Get`, `Set`) to `cli.rs`; add `Command::Config` dispatch
+2. Implement dispatch in `main.rs` — `init`, `show`, `path`, `get`, `set` against `Config`
+3. Write `tests/config_integration.rs` — init creates/errors, show/path/get/set round-trip, get unset key, set creates file
+4. Update `README.md` — add `config` command usage examples
+5. `cargo fmt`, `cargo clippy -- -D warnings`, `cargo audit` pass
+6. Update `CHANGELOG.md`, bump `Cargo.toml` to `0.4.0`, tag `v0.4.0` → release
+
+### Exit criteria
+
+- [x] `agentctl config init` creates default config; errors if file exists; `--force` overwrites
+- [x] `agentctl config show` prints pretty JSON of current config
+- [x] `agentctl config path` prints absolute path to config file
+- [x] `agentctl config get skills_root` prints value or empty string
+- [x] `agentctl config set skills_root <val>` persists value; round-trip verified
+- [x] `agentctl config set` creates config file if missing
+- [x] Unknown key returns non-zero exit with clear error
+- [x] `tests/config_integration.rs` — integration tests covering all five subcommands
+- [x] `README.md` updated with `config` command usage examples
+- [x] `cargo fmt`, `cargo clippy -- -D warnings`, `cargo audit` pass
+- [x] `CHANGELOG.md` updated, tag `v0.4.0` → release
+
+---
+
+## Phase 5 — Doc Hub & MCP Management
 
 Covered in [hub-management.md](hub-management.md), [mcp-management.md](mcp-management.md), [skill-management.md](skill-management.md).
 

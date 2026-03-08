@@ -82,6 +82,7 @@ pub fn install(
         .to_string();
     let commit = skill_entry["commit_hash"]
         .as_str()
+        .or_else(|| skill_entry["commit"].as_str())
         .unwrap_or("")
         .to_string();
     let skill_path_rel = skill_entry["path"]
@@ -202,7 +203,10 @@ pub fn update(
         .ok_or_else(|| anyhow::anyhow!("skill '{name}' not found in hub"))?;
 
     let new_version = skill_entry["version"].as_str().unwrap_or("0.1.0");
-    let new_commit = skill_entry["commit_hash"].as_str().unwrap_or("");
+    let new_commit = skill_entry["commit_hash"]
+        .as_str()
+        .or_else(|| skill_entry["commit"].as_str())
+        .unwrap_or("");
 
     if new_version == existing.version && new_commit == existing.commit {
         println!("Skill '{name}' is already up to date ({new_version}).");
@@ -242,11 +246,26 @@ pub fn update(
 
 fn clone_skill(git_url: &str, commit: &str, skill_path_rel: &str, dest: &Path) -> Result<()> {
     let tmp_path = std::env::temp_dir().join(format!("agentctl-clone-{}", std::process::id()));
-    std::fs::create_dir_all(&tmp_path)?;
-    let repo = git2::Repository::clone(git_url, &tmp_path)?;
+    let status = std::process::Command::new("git")
+        .args(["clone", "--quiet", git_url, tmp_path.to_str().unwrap()])
+        .status()?;
+    if !status.success() {
+        bail!("git clone failed");
+    }
     if !commit.is_empty() {
-        let obj = repo.revparse_single(commit)?;
-        repo.checkout_tree(&obj, None)?;
+        let status = std::process::Command::new("git")
+            .args([
+                "-C",
+                tmp_path.to_str().unwrap(),
+                "checkout",
+                "--quiet",
+                commit,
+            ])
+            .status()?;
+        if !status.success() {
+            std::fs::remove_dir_all(&tmp_path)?;
+            bail!("git checkout '{commit}' failed");
+        }
     }
     let src = tmp_path.join(skill_path_rel);
     if !src.exists() {

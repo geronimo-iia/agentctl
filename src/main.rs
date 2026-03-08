@@ -4,7 +4,7 @@ use agentctl::{config, hub, skill};
 use anyhow::Result;
 use clap::Parser;
 
-use cli::{Cli, Command, HubAction, HubType, SkillAction};
+use cli::{Cli, Command, ConfigAction, HubAction, HubType, SkillAction};
 
 fn prompt_user(_cmd: &str) -> bool {
     use std::io::{BufRead, Write};
@@ -140,6 +140,42 @@ fn main() -> Result<()> {
                     hub::registry::refresh_all(&cfg_path)?;
                     println!("✓ Refreshed all enabled hubs");
                 }
+            },
+        },
+
+        Command::Config { action } => match action {
+            ConfigAction::Init { force } => {
+                if cfg_path.exists() && !force {
+                    anyhow::bail!(
+                        "config already exists at {}; use --force to overwrite",
+                        cfg_path.display()
+                    );
+                }
+                config::Config::default().save_to(&cfg_path)?;
+                println!("✓ Created {}", cfg_path.display());
+            }
+            ConfigAction::Show => {
+                let cfg = config::Config::load_from(&cfg_path)?;
+                println!("{}", serde_json::to_string_pretty(&cfg)?);
+            }
+            ConfigAction::Path => {
+                println!("{}", cfg_path.display());
+            }
+            ConfigAction::Get { key } => match key.as_str() {
+                "skills_root" => {
+                    let cfg = config::Config::load_from(&cfg_path)?;
+                    println!("{}", cfg.skills_root.unwrap_or_default());
+                }
+                _ => anyhow::bail!("unknown key '{key}'"),
+            },
+            ConfigAction::Set { key, value } => match key.as_str() {
+                "skills_root" => {
+                    let mut cfg = config::Config::load_from(&cfg_path)?;
+                    cfg.skills_root = if value.is_empty() { None } else { Some(value) };
+                    cfg.save_to(&cfg_path)?;
+                    println!("✓ Set skills_root");
+                }
+                _ => anyhow::bail!("unknown key '{key}'"),
             },
         },
 

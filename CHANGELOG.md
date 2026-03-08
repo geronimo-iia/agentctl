@@ -6,6 +6,23 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and 
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-07-16
+
+### Added
+
+- `agentctl config init [--force]` — create default `~/.agentctl/config.json`; errors if file exists unless `--force`
+- `agentctl config show` — print full config as pretty JSON
+- `agentctl config path` — print absolute path to config file
+- `agentctl config get <key>` — print scalar config value (`skills_root`); empty string if unset
+- `agentctl config set <key> <value>` — set scalar config value; creates file if missing
+- `tests/config_integration.rs` — 10 integration tests covering all five subcommands
+- `README.md` — Config Management section with usage examples
+
+### Fixed
+
+- `skill install/update` read `commit_hash` from index but field is named `commit` — now accepts both
+- `clone_skill` used libgit2 which lacked TLS support — replaced with `git clone` / `git checkout` shell-out
+
 ## [0.3.1] - 2026-07-15
 
 ### Added
