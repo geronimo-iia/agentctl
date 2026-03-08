@@ -17,7 +17,7 @@ Ship a first version of `agentctl` that covers hub validation and index generati
 
 ---
 
-## Phase 1 — Hub Validate & Generate (MVP)
+## Phase 1 — Hub Validate & Generate (MVP) ✅ DONE
 
 **Goal**: Parity with `agent-hub-indexer` as a Rust binary. This is the gate before publishing hubs.
 
@@ -206,23 +206,70 @@ agentctl hub list
 agentctl hub remove <id>
 agentctl hub enable <id>
 agentctl hub disable <id>
-agentctl hub refresh [<id>]
+agentctl hub refresh [<id>|--all]
 ```
 
 ### Scope
 
+- Per-hub `agentctl.toml` config file — `hub_id`, ignore patterns, overrides CLI flags when present
 - Config file at `~/.agentctl/config.json` (skill_hubs + doc_hubs arrays)
 - Index cache at `~/.agentctl/cache/hubs/<id>/index.json` with TTL (default 6h)
 - Auto-detect hub type from `index.json` `type` field
 - HTTP fetch via `reqwest`
+- Stale cache used with warning when network unavailable
+- `hub refresh` with no args or `--all` refreshes all enabled hubs
+
+### agentctl.toml (per-hub)
+
+Optional file at hub root. CLI flags take precedence over file values.
+
+```toml
+[hub]
+id = "agent-foundation"  # overrides --hub-id
+
+[generate]
+# Replaces default exclusion list when present
+ignore = [
+  "README.md",
+  "CHANGELOG.md",
+  "CONTRIBUTING.md",
+  "ARCHIVED.md",
+  "draft-*.md",
+]
+```
+
+**Default exclusions** (applied when no `agentctl.toml` or no `[generate] ignore` key):
+```
+README.md, CHANGELOG.md, CONTRIBUTING.md, LICENSE*, ARCHIVED.md
+```
+
+Matching is case-insensitive on filename only. Applies to both validate and generate.
 
 ### New modules
 
+- `src/hub/config.rs` — read `agentctl.toml` from hub root (hub_id, ignore patterns)
 - `src/config.rs` — read/write `~/.agentctl/config.json`
 - `src/hub/registry.rs` — add/list/remove/enable/disable
 - `src/hub/cache.rs` — TTL-based index caching
 
-Add to `Cargo.toml`: `reqwest = { version = "0.11", features = ["json"] }`, `tokio = { version = "1.0", features = ["full"] }`
+Add to `Cargo.toml`: `reqwest = { version = "0.11", features = ["json"] }`, `tokio = { version = "1.0", features = ["full"] }`, `toml = "0.8"`
+
+### Exit criteria
+
+- [ ] `agentctl hub add/list/remove/enable/disable` implemented and tested
+- [ ] `agentctl hub refresh [<id>|--all]` implemented — refreshes one or all enabled hubs
+- [ ] Stale cache used with warning when network unavailable
+- [ ] `agentctl.toml` read at hub root — `hub_id` and `ignore` respected by validate + generate
+- [ ] Default exclusion list applied when no `agentctl.toml`
+- [ ] CLI flags take precedence over `agentctl.toml` values
+- [ ] `~/.agentctl/config.json` read/write working
+- [ ] Index cache with TTL at `~/.agentctl/cache/hubs/<id>/index.json`
+- [ ] Tests for registry commands, `agentctl.toml` loading, default exclusions, CLI override
+- [ ] `docs/hub-config.md` — `agentctl.toml` format spec
+- [ ] `README.md` updated with `agentctl.toml` section and example
+- [ ] Example `agentctl.toml` committed to `agent-foundation` and `agent-skills` repos
+- [ ] `cargo fmt`, `cargo clippy -- -D warnings`, `cargo audit` pass
+- [ ] `CHANGELOG.md` updated, tag `v0.2.0` → release
 
 ---
 
