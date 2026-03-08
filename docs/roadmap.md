@@ -286,7 +286,7 @@ Add to `Cargo.toml`: `ureq = { version = "2", features = ["json"] }`, `toml = "0
 - [x] CLI flags take precedence over `agentctl.toml` values
 - [x] `~/.agentctl/config.json` read/write working
 - [x] `--config` flag added for test isolation and explicit config path override
-- [ ] `#[allow(dead_code)]` on `Config::load`/`save` (config.rs), `cache.rs`, `registry.rs` — remove all when Phase 3 wires them in
+- [x] No dead code — `Config::load`/`save` wrappers removed, all `#[allow(dead_code)]` eliminated
 - [x] Index cache with TTL at `~/.agentctl/cache/hubs/<id>/index.json`
 - [x] Tests for registry commands, `agentctl.toml` loading, default exclusions, CLI override
 - [x] 28 unit tests + 13 integration tests passing
