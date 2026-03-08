@@ -68,12 +68,13 @@ impl Config {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::path::Path;
     use tempfile::TempDir;
 
-    fn write_config(dir: &TempDir, json: &str) -> PathBuf {
-        let path = dir.path().join("config.json");
-        std::fs::write(&path, json).unwrap();
-        path
+    fn fixture(name: &str) -> PathBuf {
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("tests/fixtures")
+            .join(name)
     }
 
     #[test]
@@ -85,35 +86,40 @@ mod tests {
     }
 
     #[test]
+    fn empty_json_object_loads_as_empty_config() {
+        let cfg = Config::load_from(&fixture("config-empty.json")).unwrap();
+        assert!(cfg.skill_hubs.is_empty());
+        assert!(cfg.doc_hubs.is_empty());
+    }
+
+    #[test]
     fn defaults_applied_on_missing_fields() {
-        let dir = TempDir::new().unwrap();
-        let path = write_config(
-            &dir,
-            r#"{"skill_hubs":[{"id":"x","index_url":"http://x"}],"doc_hubs":[]}"#,
-        );
-        let cfg = Config::load_from(&path).unwrap();
+        let cfg = Config::load_from(&fixture("config-defaults.json")).unwrap();
+        assert_eq!(cfg.skill_hubs[0].id, "minimal-hub");
         assert!(cfg.skill_hubs[0].enabled);
         assert_eq!(cfg.skill_hubs[0].ttl_hours, 6);
         assert!(cfg.skill_hubs[0].git_url.is_none());
     }
 
     #[test]
+    fn load_valid_config() {
+        let cfg = Config::load_from(&fixture("config-valid.json")).unwrap();
+        assert_eq!(cfg.skill_hubs.len(), 1);
+        assert_eq!(cfg.skill_hubs[0].id, "agent-foundation");
+        assert_eq!(cfg.skill_hubs[0].ttl_hours, 12);
+        assert!(cfg.skill_hubs[0].git_url.is_some());
+        assert_eq!(cfg.doc_hubs.len(), 1);
+        assert!(!cfg.doc_hubs[0].enabled);
+    }
+
+    #[test]
     fn save_and_load_roundtrip() {
         let dir = TempDir::new().unwrap();
         let path = dir.path().join("config.json");
-        let entry = HubEntry {
-            id: "agent-foundation".into(),
-            index_url: "https://example.com/index.json".into(),
-            git_url: Some("https://github.com/x/y".into()),
-            enabled: true,
-            ttl_hours: 12,
-        };
-        let cfg = Config {
-            skill_hubs: vec![entry.clone()],
-            doc_hubs: vec![],
-        };
-        cfg.save_to(&path).unwrap();
+        let src = Config::load_from(&fixture("config-valid.json")).unwrap();
+        src.save_to(&path).unwrap();
         let loaded = Config::load_from(&path).unwrap();
-        assert_eq!(loaded.skill_hubs[0], entry);
+        assert_eq!(loaded.skill_hubs[0], src.skill_hubs[0]);
+        assert_eq!(loaded.doc_hubs[0], src.doc_hubs[0]);
     }
 }
