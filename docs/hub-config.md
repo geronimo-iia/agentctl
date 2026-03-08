@@ -21,16 +21,34 @@ id = "agent-foundation"  # overrides --hub-id on generate
 
 [generate]
 # Replaces the default exclusion list when present.
-# Matched case-insensitively against filename only (not path).
-# Supports a single * wildcard anywhere in the pattern.
+# Supports filename patterns, directory patterns, and path wildcards.
 ignore = [
-  "README.md",
+  "README.md",              # exact filename match
   "CHANGELOG.md",
   "CONTRIBUTING.md",
   "ARCHIVED.md",
-  "draft-*.md",
+  "draft-*.md",             # filename wildcard (single * supported)
+  "rules/templates/",       # directory pattern (excludes all files in directory)
+  "docs/internal/*.md",     # path wildcard (specific pattern in directory)
 ]
 ```
+
+### Pattern Types
+
+**Filename patterns** (backward compatible):
+- `"README.md"` - exact filename match
+- `"draft-*.md"` - filename wildcard (matches `draft-test.md`, `draft-wip.md`, etc.)
+- Matched case-insensitively against filename only, works at any path level
+
+**Directory patterns** (new):
+- `"templates/"` - excludes all files in `templates/` directory
+- `"rules/templates/"` - excludes all files in `rules/templates/` directory
+- Matches files at root level or nested within other directories
+
+**Path wildcards** (new):
+- `"rules/*.md"` - excludes `.md` files directly in `rules/` directory
+- `"docs/internal/*.md"` - excludes `.md` files directly in `docs/internal/` directory
+- Does not match files in subdirectories (e.g., `rules/sub/file.md` not matched by `rules/*.md`)
 
 ### Default exclusions
 

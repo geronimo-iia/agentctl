@@ -474,6 +474,89 @@ Add `ConfigAction` enum to `cli.rs`; add `Command::Config` variant.
 
 ---
 
+## Phase 4.5 — Enhanced Ignore Patterns
+
+**Goal**: Add support for path-based ignore patterns in `agentctl.toml` to properly exclude directories and nested files.
+
+### Problem
+
+Current implementation only supports filename-based patterns, not path-based patterns. This causes issues when trying to exclude entire directories like `rules/templates/` where template files lack YAML frontmatter and should not be included in hub generation.
+
+**Current limitation**: `"rules/templates/"` in ignore list doesn't work because `glob_md_files()` only calls `is_ignored()` on filenames, not full paths.
+
+### Solution
+
+Extend the ignore pattern matching to support:
+- **Directory patterns**: `"rules/templates/"` excludes all files in that directory
+- **Path wildcards**: `"rules/templates/*.md"` excludes specific file patterns in directories
+
+### Implementation
+
+**Enhanced `glob_match()` function**:
+- Support path separators in patterns
+- Handle directory-only patterns (ending with `/`)
+- Maintain backward compatibility with existing filename patterns
+
+**Modified `glob_md_files()` function**:
+- Pass relative file path to `is_ignored()` instead of just filename
+- Maintain backward compatibility with existing filename patterns
+
+**Pattern examples**:
+```toml
+[generate]
+ignore = [
+  "README.md",                    # filename (existing)
+  "draft-*.md",                   # filename wildcard (existing)
+  "rules/templates/",             # directory (new)
+  "rules/templates/*.md",         # path wildcard (new)
+]
+```
+
+### New modules
+
+- Extend `src/hub/config.rs` — enhance `glob_match()` function
+- Update `src/hub/generate.rs` — modify `glob_md_files()` to pass paths
+
+### Steps
+
+1. Enhance `glob_match()` in `src/hub/config.rs`:
+   - Add path separator handling
+   - Support directory patterns (ending with `/`)
+   - Maintain backward compatibility with filename-only patterns
+
+2. Update `glob_md_files()` in `src/hub/generate.rs`:
+   - Pass relative file path to `is_ignored()` instead of filename
+   - Ensure paths use consistent separators (`/`)
+
+3. Add comprehensive tests:
+   - Directory exclusion: `"templates/"` excludes `templates/file.md`
+   - Path wildcards: `"rules/*.md"` excludes `rules/file.md` but not `rules/sub/file.md`
+   - Backward compatibility: existing filename patterns still work
+
+4. Update documentation:
+   - `docs/hub-config.md` — document new pattern syntax
+   - `README.md` — add examples of path-based patterns
+
+5. Fix agent-foundation:
+   - Update `agentctl.toml` to use `"rules/templates/"` instead of individual filenames
+   - Verify CI passes with new pattern
+
+### Exit criteria
+
+- [x] Enhanced `glob_match()` supports directory and path patterns
+- [x] `glob_md_files()` passes relative paths to `is_ignored()`
+- [x] Directory patterns work: `"rules/templates/"` excludes all files in that directory
+- [x] Path wildcards work: `"rules/*.md"` excludes files matching pattern
+- [x] Backward compatibility maintained: existing filename patterns still work
+- [x] Comprehensive test coverage for all pattern types
+- [x] `docs/hub-config.md` updated with pattern syntax documentation
+- [x] `agent-foundation/agentctl.toml` updated to use directory pattern
+- [x] CI passes for agent-foundation with new ignore pattern
+- [x] `cargo fmt`, `cargo clippy -- -D warnings`, `cargo audit` pass
+- [x] `CHANGELOG.md` updated, tag `v0.4.1` → release
+
+---
+
 ## Phase 5 — Doc Hub & MCP Management
 
 Covered in [hub-management.md](hub-management.md), [mcp-management.md](mcp-management.md), [skill-management.md](skill-management.md).

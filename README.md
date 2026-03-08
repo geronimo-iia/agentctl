@@ -157,16 +157,22 @@ id = "agent-foundation"  # overrides --hub-id on generate
 
 [generate]
 # Replaces the default exclusion list when present.
-# Matched case-insensitively against filename only (not path).
-# Supports a single * wildcard anywhere in the pattern.
+# Supports filename patterns, directory patterns, and path wildcards.
 ignore = [
-  "README.md",
+  "README.md",              # exact filename match
   "CHANGELOG.md",
   "CONTRIBUTING.md",
   "ARCHIVED.md",
-  "draft-*.md",
+  "draft-*.md",             # filename wildcard
+  "rules/templates/",       # directory pattern (excludes all files in directory)
+  "docs/internal/*.md",     # path wildcard (specific pattern in directory)
 ]
 ```
+
+**Pattern types:**
+- **Filename patterns**: `"README.md"` (exact), `"draft-*.md"` (wildcard) — matched case-insensitively at any path level
+- **Directory patterns**: `"templates/"`, `"rules/templates/"` — excludes all files in the specified directory
+- **Path wildcards**: `"rules/*.md"`, `"docs/internal/*.md"` — excludes files matching the pattern in the specific directory path
 
 When `agentctl.toml` is absent or has no `[generate] ignore` key, the default exclusions apply: `README.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, `LICENSE*`, `ARCHIVED.md`.
 

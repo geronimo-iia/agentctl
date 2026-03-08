@@ -216,20 +216,25 @@ fn parse_frontmatter(content: &str) -> Result<serde_yaml::Mapping, String> {
 }
 
 fn glob_md_files(path: &Path, cfg: &HubConfig) -> Vec<std::path::PathBuf> {
-    let mut files = Vec::new();
-    if let Ok(entries) = std::fs::read_dir(path) {
-        for entry in entries.filter_map(|e| e.ok()) {
-            let p = entry.path();
-            if p.is_dir() {
-                files.extend(glob_md_files(&p, cfg));
-            } else if p.extension().and_then(|e| e.to_str()) == Some("md") {
-                let name = p.file_name().and_then(|n| n.to_str()).unwrap_or("");
-                if !cfg.is_ignored(name) {
-                    files.push(p);
+    fn collect_files(dir: &Path, base: &Path, cfg: &HubConfig, files: &mut Vec<std::path::PathBuf>) {
+        if let Ok(entries) = std::fs::read_dir(dir) {
+            for entry in entries.filter_map(|e| e.ok()) {
+                let p = entry.path();
+                if p.is_dir() {
+                    collect_files(&p, base, cfg, files);
+                } else if p.extension().and_then(|e| e.to_str()) == Some("md") {
+                    let relative_path = p.strip_prefix(base).unwrap_or(&p);
+                    let path_str = relative_path.to_string_lossy().replace('\\', "/");
+                    if !cfg.is_ignored(&path_str) {
+                        files.push(p);
+                    }
                 }
             }
         }
     }
+    
+    let mut files = Vec::new();
+    collect_files(path, path, cfg, &mut files);
     files
 }
 

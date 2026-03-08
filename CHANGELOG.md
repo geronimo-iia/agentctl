@@ -6,6 +6,25 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and 
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-07-16
+
+### Added
+
+- Enhanced ignore patterns in `agentctl.toml` — support for directory patterns (`"rules/templates/"`) and path wildcards (`"rules/*.md"`)
+- `tests/enhanced_ignore_patterns.rs` — 6 comprehensive tests covering all pattern types
+- Path-based ignore pattern matching in both hub generation and validation
+
+### Fixed
+
+- Hub validation now respects ignore patterns — previously only generation used ignore patterns
+- `glob_md_files()` in validate.rs now passes relative paths to `is_ignored()` for consistent behavior
+- Clippy warning: replaced `Iterator::last()` with `next_back()` on `DoubleEndedIterator`
+
+### Changed
+
+- Ignore pattern matching now supports three types: filename patterns (backward compatible), directory patterns (ending with `/`), and path wildcards
+- Both generation and validation now use consistent path-based pattern matching
+
 ## [0.4.0] - 2026-07-16
 
 ### Added

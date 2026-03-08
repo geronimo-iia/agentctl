@@ -49,20 +49,63 @@ impl HubConfig {
         }
     }
 
-    /// Returns true if the filename should be excluded (case-insensitive).
-    pub fn is_ignored(&self, filename: &str) -> bool {
-        let lower = filename.to_lowercase();
+    /// Returns true if the file path should be excluded (case-insensitive).
+    pub fn is_ignored(&self, file_path: &str) -> bool {
+        let lower = file_path.to_lowercase().replace('\\', "/"); // normalize path separators
         self.ignore_list()
             .iter()
             .any(|pattern| glob_match(pattern, &lower))
     }
 }
 
-/// Minimal glob: supports `*` wildcard on filename only.
-fn glob_match(pattern: &str, name: &str) -> bool {
-    let pattern = pattern.to_lowercase();
+/// Enhanced glob matching: supports path patterns, directories, and wildcards.
+fn glob_match(pattern: &str, path: &str) -> bool {
+    let pattern = pattern.to_lowercase().replace('\\', "/"); // normalize separators
+
+    // Handle directory patterns (ending with /)
+    if pattern.ends_with('/') {
+        let dir_name = pattern.trim_end_matches('/');
+
+        // Check if path starts with this directory
+        if path.starts_with(&format!("{}/", dir_name)) {
+            return true;
+        }
+
+        // Check if path contains this directory
+        if path.contains(&format!("/{}/", dir_name)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    // Handle simple path patterns with *
+    if pattern.contains('/') {
+        let pattern_parts: Vec<&str> = pattern.split('/').collect();
+        let path_parts: Vec<&str> = path.split('/').collect();
+
+        if pattern_parts.len() != path_parts.len() {
+            return false;
+        }
+
+        for (pattern_part, path_part) in pattern_parts.iter().zip(path_parts.iter()) {
+            if !simple_glob_match(pattern_part, path_part) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // Backward compatibility: filename-only patterns
+    let filename = path.split('/').next_back().unwrap_or(path);
+    simple_glob_match(&pattern, filename)
+}
+
+/// Simple glob matching for single component (filename or directory name)
+fn simple_glob_match(pattern: &str, name: &str) -> bool {
     match pattern.find('*') {
-        None => name == pattern.as_str(),
+        None => name == pattern,
         Some(i) => name.starts_with(&pattern[..i]) && name.ends_with(&pattern[i + 1..]),
     }
 }
