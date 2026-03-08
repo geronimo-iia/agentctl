@@ -318,7 +318,41 @@ agentctl skill update [<name>]
 - Git clone or sparse checkout for install
 - `lifecycle.yaml` execution with user approval prompt
 
----
+### lifecycle.yaml execution design
+
+New modules: `src/skill/lifecycle.rs` + `src/skill/vars.rs`. No new dependencies — `serde_yaml` already present, `std::process::Command` for execution.
+
+**`vars.rs`** — variable resolution:
+- Built-ins injected first: `SKILL_NAME`, `SKILL_PATH`, `HOME`, `PLATFORM`
+- Custom vars from `variables:` block evaluated sequentially in declaration order
+- Each var expanded against already-resolved vars before moving to next
+- Error on undefined reference; forward references not allowed
+- Simple `${VAR}` string replacement — no shell, no eval
+
+**`lifecycle.rs`** — execution:
+1. Parse `lifecycle.yaml` into typed structs (`LifecycleFile`, `LifecycleStep`)
+2. Select section (`install` / `update` / `uninstall`) based on command
+3. Filter steps by current platform (`all` | `linux` | `macos` | `windows`)
+4. For each step:
+   - Print description + expanded command
+   - If `requires_approval: true` → prompt `Approve? [y/N]`, abort on `n`
+   - Execute via `sh -c <expanded_cmd>`; propagate exit code
+
+**Approval prompt format:**
+```
+  → Create virtual environment
+    uv venv ~/.agentctl/skills/my-skill/.venv
+  Approve? [y/N]
+```
+
+**Testability**: `execute_lifecycle(section, steps, vars, approver: fn(&str) -> bool)` — inject approver for tests (always-yes / always-no).
+
+### New modules
+
+- `src/skill/mod.rs` — skill install/list/remove/update
+- `src/skill/lifecycle.rs` — parse and execute `lifecycle.yaml`
+- `src/skill/vars.rs` — built-in + custom variable resolution
+- `src/skill/lock.rs` — read/write `~/.agentctl/skills.lock.json`
 
 ## Phase 4 — Doc Hub & MCP Management
 
