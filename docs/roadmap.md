@@ -308,13 +308,14 @@ Add to `Cargo.toml`: `ureq = { version = "2", features = ["json"] }`, `toml = "0
 agentctl [--quiet] [--yes]
 agentctl skill install <name> [--hub <id>] [--mode <mode>] [--yes]
 agentctl skill list
-agentctl skill remove <name> [--yes]
-agentctl skill update [<name>] [--yes]
+agentctl skill remove <name> [--hub <id>] [--yes]
+agentctl skill update [<name>] [--hub <id>] [--yes] [--force]
 ```
 
 **Global flags** (available on all commands via `global = true` in clap):
 - `--quiet` / `-q` — suppress all step output; implies `--yes` (no interactive prompts)
 - `--yes` / `-y` — auto-approve all `requires_approval` steps; output remains visible
+- `--lock <path>` — override lock file path (default: `~/.agentctl/skills.lock.json`); used for test isolation
 
 ### Scope
 
@@ -352,6 +353,8 @@ New modules: `src/skill/lifecycle.rs` + `src/skill/vars.rs`. No new dependencies
 
 **Testability**: `execute_lifecycle(steps, vars, quiet: bool, approver: Approver, executor: Executor)` — inject approver for tests (`always_yes` / `always_no`). When `quiet = true`, step output is suppressed and approver is never called.
 
+`execute_update(lf, vars, quiet, force, approver, executor)` — encapsulates the `--force` logic: bail if `update` section is empty and `force = false`; run `uninstall` then `install` sections when `force = true`.
+
 ### New modules
 
 - `src/skill/mod.rs` — skill install/list/remove/update
@@ -371,7 +374,7 @@ Split integration tests by command group:
 
 ```
 tests/
-├── common/mod.rs          # shared: agentctl(), fixture(), with_config()
+├── common/mod.rs          # shared: agentctl(), fixture(), with_config(), with_lock(), with_config_and_lock()
 ├── hub_integration.rs     # existing hub tests (refactored to use common)
 └── skill_integration.rs   # Phase 3 skill tests
 ```
@@ -387,9 +390,9 @@ Refactor `hub_integration.rs` to use `common::*` as first step of Phase 3.
 5. Implement `src/skill/mod.rs` — `skill install`: resolve hub from cache, sparse-clone at pinned commit, copy skill dir, run lifecycle `install` section, write lock entry
 6. Implement `skill list` — read lock file, print installed skills
 7. Implement `skill remove` — run lifecycle `uninstall` section, remove dir, remove lock entry
-8. Implement `skill update` — compare versions, re-clone at new commit, run lifecycle `update` section, update lock entry
-9. Wire CLI — add `SkillAction` variants to `cli.rs`, add `--quiet`/`--yes` global flags to root `Cli` struct, dispatch in `main.rs`
-10. Write `tests/skill_integration.rs` — install/list/remove/update using fixtures and injected approver
+8. Implement `skill update` — compare versions, re-clone at new commit, run lifecycle `update` section, update lock entry; error if no `update` section and `--force` not set; `--force` runs uninstall+install
+9. Wire CLI — add `SkillAction` variants to `cli.rs`, add `--quiet`/`--yes`/`--lock` global flags to root `Cli` struct, dispatch in `main.rs`
+10. Write `tests/skill_integration.rs` — list/remove/update using fixtures; `--lock` flag for isolation
 11. Update `README.md` — add `skill install/list/remove/update` usage examples
 12. `cargo fmt`, `cargo clippy -- -D warnings`, `cargo audit` pass
 13. Update `CHANGELOG.md`, bump `Cargo.toml` to `0.3.0`, tag `v0.3.0` → release
@@ -400,11 +403,16 @@ Refactor `hub_integration.rs` to use `common::*` as first step of Phase 3.
 - [x] `src/skill/vars.rs` — variable resolution with unit tests (built-ins, custom, forward-ref error)
 - [x] `src/skill/lifecycle.rs` — parse, platform filter, approval injection, `quiet` flag, execution
 - [x] `src/skill/lock.rs` — read/write lock file with tests
-- [ ] `agentctl skill install/list/remove/update` implemented and tested
-- [ ] `--quiet` global flag — suppresses output, implies `--yes`
-- [ ] `--yes` global flag — auto-approves all steps, output visible
-- [ ] `lifecycle.yaml` executed on install/remove/update with user approval prompt
-- [ ] Lock file written on install, updated on update, removed on uninstall
+- [x] `agentctl skill install/list/remove/update` implemented
+- [x] `--quiet` global flag — suppresses output, implies `--yes`
+- [x] `--yes` global flag — auto-approves all steps, output visible
+- [x] `--lock` global flag — overrides lock file path for test isolation
+- [x] `lifecycle.yaml` executed on install/remove/update with user approval prompt
+- [x] Lock file written on install, updated on update, removed on uninstall
+- [x] `skill update` errors when no `update` lifecycle section — `--force` runs uninstall+install
+- [x] `execute_update()` extracted into `lifecycle.rs` with 3 unit tests
+- [x] `tests/skill_integration.rs` — 11 integration tests (list, remove, install error paths, `--force` in help)
+- [x] 45 unit + 14 hub integration + 11 skill integration = 70 tests passing
 - [ ] `README.md` updated with `skill` command usage examples
 - [ ] `cargo fmt`, `cargo clippy -- -D warnings`, `cargo audit` pass
 - [ ] `CHANGELOG.md` updated, tag `v0.3.0` → release
