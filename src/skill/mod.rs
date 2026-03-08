@@ -169,7 +169,7 @@ pub fn update(
     force: bool,
     approver: Approver,
 ) -> Result<()> {
-    let lock = LockFile::load(lp)?;
+    let mut lock = LockFile::load(lp)?;
 
     // find existing entry to get hub_id if not provided
     let existing = if let Some(id) = hub_id {
@@ -226,7 +226,6 @@ pub fn update(
         execute_update(&lf, &resolved_vars, quiet, force, approver, sh_executor)?;
     }
 
-    let mut lock = LockFile::load(lp)?;
     lock.insert(LockEntry {
         hub_id: existing.hub_id.clone(),
         slug: name.to_string(),
