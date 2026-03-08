@@ -42,20 +42,25 @@ pub fn config_path() -> PathBuf {
 
 impl Config {
     pub fn load() -> Result<Self> {
-        let path = config_path();
+        Self::load_from(&config_path())
+    }
+
+    pub fn load_from(path: &std::path::Path) -> Result<Self> {
         if !path.exists() {
             return Ok(Self::default());
         }
-        let data = std::fs::read_to_string(&path)?;
-        Ok(serde_json::from_str(&data)?)
+        Ok(serde_json::from_str(&std::fs::read_to_string(path)?)?)
     }
 
     pub fn save(&self) -> Result<()> {
-        let path = config_path();
+        self.save_to(&config_path())
+    }
+
+    pub fn save_to(&self, path: &std::path::Path) -> Result<()> {
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent)?;
         }
-        std::fs::write(&path, serde_json::to_string_pretty(self)?)?;
+        std::fs::write(path, serde_json::to_string_pretty(self)?)?;
         Ok(())
     }
 }
@@ -72,18 +77,21 @@ mod tests {
     }
 
     #[test]
-    fn roundtrip_empty() {
-        let cfg = Config::default();
-        let json = serde_json::to_string_pretty(&cfg).unwrap();
-        let back: Config = serde_json::from_str(&json).unwrap();
-        assert!(back.skill_hubs.is_empty());
-        assert!(back.doc_hubs.is_empty());
+    fn load_from_missing_returns_default() {
+        let dir = TempDir::new().unwrap();
+        let cfg = Config::load_from(&dir.path().join("config.json")).unwrap();
+        assert!(cfg.skill_hubs.is_empty());
+        assert!(cfg.doc_hubs.is_empty());
     }
 
     #[test]
     fn defaults_applied_on_missing_fields() {
-        let json = r#"{"skill_hubs":[{"id":"x","index_url":"http://x"}],"doc_hubs":[]}"#;
-        let cfg: Config = serde_json::from_str(json).unwrap();
+        let dir = TempDir::new().unwrap();
+        let path = write_config(
+            &dir,
+            r#"{"skill_hubs":[{"id":"x","index_url":"http://x"}],"doc_hubs":[]}"#,
+        );
+        let cfg = Config::load_from(&path).unwrap();
         assert!(cfg.skill_hubs[0].enabled);
         assert_eq!(cfg.skill_hubs[0].ttl_hours, 6);
         assert!(cfg.skill_hubs[0].git_url.is_none());
@@ -92,6 +100,7 @@ mod tests {
     #[test]
     fn save_and_load_roundtrip() {
         let dir = TempDir::new().unwrap();
+        let path = dir.path().join("config.json");
         let entry = HubEntry {
             id: "agent-foundation".into(),
             index_url: "https://example.com/index.json".into(),
@@ -103,10 +112,8 @@ mod tests {
             skill_hubs: vec![entry.clone()],
             doc_hubs: vec![],
         };
-        let path = dir.path().join("config.json");
-        std::fs::write(&path, serde_json::to_string_pretty(&cfg).unwrap()).unwrap();
-        let loaded: Config =
-            serde_json::from_str(&std::fs::read_to_string(&path).unwrap()).unwrap();
+        cfg.save_to(&path).unwrap();
+        let loaded = Config::load_from(&path).unwrap();
         assert_eq!(loaded.skill_hubs[0], entry);
     }
 }
