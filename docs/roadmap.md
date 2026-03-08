@@ -215,7 +215,7 @@ agentctl hub refresh [<id>|--all]
 - Config file at `~/.agentctl/config.json` (skill_hubs + doc_hubs arrays)
 - Index cache at `~/.agentctl/cache/hubs/<id>/index.json` with TTL (default 6h)
 - Auto-detect hub type from `index.json` `type` field
-- HTTP fetch via `reqwest`
+- HTTP fetch via `ureq` (synchronous — no async runtime needed for a CLI tool)
 - Stale cache used with warning when network unavailable
 - `hub refresh` with no args or `--all` refreshes all enabled hubs
 
@@ -272,7 +272,9 @@ Filesystem-based TTL — no daemon, no background process.
 - `src/hub/registry.rs` — add/list/remove/enable/disable
 - `src/hub/cache.rs` — TTL-based index caching
 
-Add to `Cargo.toml`: `reqwest = { version = "0.11", features = ["json"] }`, `tokio = { version = "1.0", features = ["full"] }`, `toml = "0.8"`
+Add to `Cargo.toml`: `ureq = { version = "2", features = ["json"] }`, `toml = "0.8"`
+
+**Rationale**: `ureq` is synchronous, no `tokio` runtime, compiles fast, keeps binary small. A CLI tool runs one command and exits — async adds no value here.
 
 ### Exit criteria
 
