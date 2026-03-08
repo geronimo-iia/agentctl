@@ -221,6 +221,7 @@ mod tests {
         let dir = TempDir::new().unwrap();
         let config_path = dir.path().join("config.json");
         let cfg = Config {
+            skills_root: None,
             skill_hubs: vec![hub_entry("test-hub", true)],
             doc_hubs: vec![],
         };
@@ -236,6 +237,7 @@ mod tests {
         let config_path = dir.path().join("config.json");
         let cache_root = dir.path().join("cache");
         let cfg = Config {
+            skills_root: None,
             skill_hubs: vec![hub_entry("test-hub", true)],
             doc_hubs: vec![],
         };
@@ -250,6 +252,7 @@ mod tests {
         let config_path = dir.path().join("config.json");
         let cache_root = dir.path().join("cache");
         let cfg = Config {
+            skills_root: None,
             skill_hubs: vec![
                 hub_entry("enabled-hub", true),
                 hub_entry("disabled-hub", false),

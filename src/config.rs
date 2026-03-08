@@ -25,6 +25,8 @@ fn default_ttl() -> u64 {
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Config {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub skills_root: Option<String>,
     #[serde(default)]
     pub skill_hubs: Vec<HubEntry>,
     #[serde(default)]

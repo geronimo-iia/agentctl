@@ -11,13 +11,31 @@ use crate::hub::cache;
 use lifecycle::{execute_lifecycle, execute_update, sh_executor, Approver, LifecycleFile};
 use lock::{LockEntry, LockFile};
 
-pub fn skills_root(mode: Option<&str>) -> PathBuf {
-    let base = dirs::home_dir()
-        .unwrap_or_else(|| PathBuf::from("."))
-        .join(".agent");
+pub fn skills_root(configured: Option<&str>, mode: Option<&str>) -> PathBuf {
+    let base = match configured {
+        Some(p) => {
+            let expanded = p.replacen(
+                '~',
+                &dirs::home_dir().unwrap_or_default().to_string_lossy(),
+                1,
+            );
+            PathBuf::from(expanded)
+        }
+        None => dirs::home_dir()
+            .unwrap_or_else(|| PathBuf::from("."))
+            .join(".agent")
+            .join("skills"),
+    };
     match mode {
-        Some(m) => base.join(format!("skills-{m}")),
-        None => base.join("skills"),
+        Some(m) => {
+            // append mode suffix to the last component
+            let name = format!(
+                "{}-{m}",
+                base.file_name().unwrap_or_default().to_string_lossy()
+            );
+            base.parent().unwrap_or(&base).join(name)
+        }
+        None => base,
     }
 }
 
@@ -76,7 +94,7 @@ pub fn install(
         .as_deref()
         .ok_or_else(|| anyhow::anyhow!("hub '{}' has no git_url — cannot install", hub.id))?;
 
-    let install_dir = skills_root(mode).join(name);
+    let install_dir = skills_root(cfg.skills_root.as_deref(), mode).join(name);
     clone_skill(git_url, &commit, skill_path_rel, &install_dir)?;
 
     // run lifecycle install
