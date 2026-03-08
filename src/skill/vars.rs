@@ -29,7 +29,6 @@ pub fn expand(template: &str, vars: &HashMap<String, String>) -> Result<String> 
     Ok(result)
 }
 
-#[allow(dead_code)]
 pub fn resolve(
     skill_name: &str,
     skill_path: &str,
@@ -38,10 +37,7 @@ pub fn resolve(
     let mut vars = HashMap::new();
     vars.insert("SKILL_NAME".into(), skill_name.into());
     vars.insert("SKILL_PATH".into(), skill_path.into());
-    vars.insert(
-        "HOME".into(),
-        std::env::var("HOME").unwrap_or_default(),
-    );
+    vars.insert("HOME".into(), std::env::var("HOME").unwrap_or_default());
     vars.insert(
         "PLATFORM".into(),
         if cfg!(target_os = "macos") {

@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use anyhow::{bail, Result};
 use serde::Deserialize;
 use std::collections::HashMap;

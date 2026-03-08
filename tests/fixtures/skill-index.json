@@ -1,0 +1,14 @@
+{
+  "hub_id": "test-hub",
+  "type": "skills",
+  "generated_at": "2026-01-01T00:00:00Z",
+  "skills": [
+    {
+      "slug": "my-skill",
+      "name": "My Skill",
+      "version": "1.0.0",
+      "commit_hash": "abc1234",
+      "path": "my-skill"
+    }
+  ]
+}

@@ -10,6 +10,10 @@ pub struct Cli {
     #[arg(long, global = true)]
     pub config: Option<PathBuf>,
 
+    /// Path to the skills lock file (default: ~/.agentctl/skills.lock.json).
+    #[arg(long, global = true)]
+    pub lock: Option<PathBuf>,
+
     /// Suppress all output; implies --yes.
     #[arg(long, short = 'q', global = true)]
     pub quiet: bool,

@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 use crate::config::Config;
 use crate::hub::cache;
 use lifecycle::{execute_lifecycle, sh_executor, Approver, LifecycleFile};
-use lock::{lock_path, LockEntry, LockFile};
+use lock::{LockEntry, LockFile};
 
 pub fn skills_root(mode: Option<&str>) -> PathBuf {
     let base = dirs::home_dir()
@@ -23,6 +23,7 @@ pub fn skills_root(mode: Option<&str>) -> PathBuf {
 
 pub fn install(
     cfg_path: &Path,
+    lp: &Path,
     name: &str,
     hub_id: Option<&str>,
     mode: Option<&str>,
@@ -83,16 +84,12 @@ pub fn install(
     if lifecycle_path.exists() {
         let yaml = std::fs::read_to_string(&lifecycle_path)?;
         let lf: LifecycleFile = lifecycle::parse(&yaml)?;
-        let resolved_vars = vars::resolve(
-            name,
-            install_dir.to_str().unwrap_or(""),
-            &lf.variables,
-        )?;
+        let resolved_vars = vars::resolve(name, install_dir.to_str().unwrap_or(""), &lf.variables)?;
         execute_lifecycle(&lf.install, &resolved_vars, quiet, approver, sh_executor)?;
     }
 
     // write lock entry
-    let mut lock = LockFile::load(&lock_path())?;
+    let mut lock = LockFile::load(lp)?;
     lock.insert(LockEntry {
         hub_id: hub.id.clone(),
         slug: name.to_string(),
@@ -101,14 +98,14 @@ pub fn install(
         installed_path: install_dir.to_string_lossy().to_string(),
         installed_at: Utc::now().to_rfc3339(),
     });
-    lock.save(&lock_path())?;
+    lock.save(lp)?;
 
     println!("✓ Installed skill '{name}'");
     Ok(())
 }
 
-pub fn list() -> Result<()> {
-    let lock = LockFile::load(&lock_path())?;
+pub fn list(lp: &Path) -> Result<()> {
+    let lock = LockFile::load(lp)?;
     if lock.skills.is_empty() {
         println!("No skills installed.");
         return Ok(());
@@ -119,13 +116,8 @@ pub fn list() -> Result<()> {
     Ok(())
 }
 
-pub fn remove(
-    name: &str,
-    hub_id: &str,
-    quiet: bool,
-    approver: Approver,
-) -> Result<()> {
-    let mut lock = LockFile::load(&lock_path())?;
+pub fn remove(lp: &Path, name: &str, hub_id: &str, quiet: bool, approver: Approver) -> Result<()> {
+    let mut lock = LockFile::load(lp)?;
     let entry = lock
         .get(hub_id, name)
         .ok_or_else(|| anyhow::anyhow!("skill '{name}' not installed"))?
@@ -144,7 +136,7 @@ pub fn remove(
         std::fs::remove_dir_all(&install_dir)?;
     }
     lock.remove(hub_id, name);
-    lock.save(&lock_path())?;
+    lock.save(lp)?;
 
     println!("✓ Removed skill '{name}'");
     Ok(())
@@ -152,12 +144,13 @@ pub fn remove(
 
 pub fn update(
     cfg_path: &Path,
+    lp: &Path,
     name: &str,
     hub_id: Option<&str>,
     quiet: bool,
     approver: Approver,
 ) -> Result<()> {
-    let lock = LockFile::load(&lock_path())?;
+    let lock = LockFile::load(lp)?;
 
     // find existing entry to get hub_id if not provided
     let existing = if let Some(id) = hub_id {
@@ -210,12 +203,11 @@ pub fn update(
     if lifecycle_path.exists() {
         let yaml = std::fs::read_to_string(&lifecycle_path)?;
         let lf: LifecycleFile = lifecycle::parse(&yaml)?;
-        let resolved_vars =
-            vars::resolve(name, install_dir.to_str().unwrap_or(""), &lf.variables)?;
+        let resolved_vars = vars::resolve(name, install_dir.to_str().unwrap_or(""), &lf.variables)?;
         execute_lifecycle(&lf.update, &resolved_vars, quiet, approver, sh_executor)?;
     }
 
-    let mut lock = LockFile::load(&lock_path())?;
+    let mut lock = LockFile::load(lp)?;
     lock.insert(LockEntry {
         hub_id: existing.hub_id.clone(),
         slug: name.to_string(),
@@ -224,7 +216,7 @@ pub fn update(
         installed_path: existing.installed_path.clone(),
         installed_at: Utc::now().to_rfc3339(),
     });
-    lock.save(&lock_path())?;
+    lock.save(lp)?;
 
     println!("✓ Updated skill '{name}' to {new_version}");
     Ok(())

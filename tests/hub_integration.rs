@@ -135,7 +135,11 @@ fn hub_add_and_list() {
     let dir = tempfile::tempdir().unwrap();
     let status = with_config(&dir)
         .args([
-            "hub", "add", "--type", "skills", "my-hub",
+            "hub",
+            "add",
+            "--type",
+            "skills",
+            "my-hub",
             "https://example.com/index.json",
         ])
         .status()
@@ -152,14 +156,22 @@ fn hub_add_duplicate_fails() {
     let dir = tempfile::tempdir().unwrap();
     with_config(&dir)
         .args([
-            "hub", "add", "--type", "skills", "my-hub",
+            "hub",
+            "add",
+            "--type",
+            "skills",
+            "my-hub",
             "https://example.com/index.json",
         ])
         .status()
         .unwrap();
     let status = with_config(&dir)
         .args([
-            "hub", "add", "--type", "skills", "my-hub",
+            "hub",
+            "add",
+            "--type",
+            "skills",
+            "my-hub",
             "https://example.com/index.json",
         ])
         .status()
@@ -172,7 +184,11 @@ fn hub_remove() {
     let dir = tempfile::tempdir().unwrap();
     with_config(&dir)
         .args([
-            "hub", "add", "--type", "skills", "my-hub",
+            "hub",
+            "add",
+            "--type",
+            "skills",
+            "my-hub",
             "https://example.com/index.json",
         ])
         .status()
@@ -192,7 +208,11 @@ fn hub_enable_disable() {
     let dir = tempfile::tempdir().unwrap();
     with_config(&dir)
         .args([
-            "hub", "add", "--type", "skills", "my-hub",
+            "hub",
+            "add",
+            "--type",
+            "skills",
+            "my-hub",
             "https://example.com/index.json",
         ])
         .status()

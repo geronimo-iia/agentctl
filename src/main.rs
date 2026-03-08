@@ -19,8 +19,13 @@ fn prompt_user(_cmd: &str) -> bool {
 fn main() -> Result<()> {
     let cli = Cli::parse();
     let cfg_path = cli.config.unwrap_or_else(config::config_path);
+    let lock_path = cli.lock.unwrap_or_else(skill::lock::lock_path);
     let quiet = cli.quiet;
-    let approver: skill::lifecycle::Approver = if quiet || cli.yes { |_| true } else { prompt_user };
+    let approver: skill::lifecycle::Approver = if quiet || cli.yes {
+        |_| true
+    } else {
+        prompt_user
+    };
 
     match cli.command {
         Command::Hub { action } => match action {
@@ -142,22 +147,37 @@ fn main() -> Result<()> {
 
         Command::Skill { action } => match action {
             SkillAction::Install { name, hub, mode } => {
-                skill::install(&cfg_path, &name, hub.as_deref(), mode.as_deref(), quiet, approver)?;
+                skill::install(
+                    &cfg_path,
+                    &lock_path,
+                    &name,
+                    hub.as_deref(),
+                    mode.as_deref(),
+                    quiet,
+                    approver,
+                )?;
             }
             SkillAction::List => {
-                skill::list()?;
+                skill::list(&lock_path)?;
             }
             SkillAction::Remove { name, hub } => {
-                skill::remove(&name, &hub, quiet, approver)?;
+                skill::remove(&lock_path, &name, &hub, quiet, approver)?;
             }
             SkillAction::Update { name, hub } => match name {
                 Some(n) => {
-                    skill::update(&cfg_path, &n, hub.as_deref(), quiet, approver)?;
+                    skill::update(&cfg_path, &lock_path, &n, hub.as_deref(), quiet, approver)?;
                 }
                 None => {
-                    let lock = skill::lock::LockFile::load(&skill::lock::lock_path())?;
+                    let lock = skill::lock::LockFile::load(&lock_path)?;
                     for entry in lock.skills.values() {
-                        skill::update(&cfg_path, &entry.slug, Some(&entry.hub_id), quiet, approver)?;
+                        skill::update(
+                            &cfg_path,
+                            &lock_path,
+                            &entry.slug,
+                            Some(&entry.hub_id),
+                            quiet,
+                            approver,
+                        )?;
                     }
                 }
             },
