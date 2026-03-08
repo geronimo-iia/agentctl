@@ -8,7 +8,7 @@ use std::path::{Path, PathBuf};
 
 use crate::config::Config;
 use crate::hub::cache;
-use lifecycle::{execute_lifecycle, sh_executor, Approver, LifecycleFile};
+use lifecycle::{execute_lifecycle, execute_update, sh_executor, Approver, LifecycleFile};
 use lock::{LockEntry, LockFile};
 
 pub fn skills_root(mode: Option<&str>) -> PathBuf {
@@ -148,6 +148,7 @@ pub fn update(
     name: &str,
     hub_id: Option<&str>,
     quiet: bool,
+    force: bool,
     approver: Approver,
 ) -> Result<()> {
     let lock = LockFile::load(lp)?;
@@ -204,7 +205,7 @@ pub fn update(
         let yaml = std::fs::read_to_string(&lifecycle_path)?;
         let lf: LifecycleFile = lifecycle::parse(&yaml)?;
         let resolved_vars = vars::resolve(name, install_dir.to_str().unwrap_or(""), &lf.variables)?;
-        execute_lifecycle(&lf.update, &resolved_vars, quiet, approver, sh_executor)?;
+        execute_update(&lf, &resolved_vars, quiet, force, approver, sh_executor)?;
     }
 
     let mut lock = LockFile::load(lp)?;

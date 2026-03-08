@@ -163,9 +163,17 @@ fn main() -> Result<()> {
             SkillAction::Remove { name, hub } => {
                 skill::remove(&lock_path, &name, &hub, quiet, approver)?;
             }
-            SkillAction::Update { name, hub } => match name {
+            SkillAction::Update { name, hub, force } => match name {
                 Some(n) => {
-                    skill::update(&cfg_path, &lock_path, &n, hub.as_deref(), quiet, approver)?;
+                    skill::update(
+                        &cfg_path,
+                        &lock_path,
+                        &n,
+                        hub.as_deref(),
+                        quiet,
+                        force,
+                        approver,
+                    )?;
                 }
                 None => {
                     let lock = skill::lock::LockFile::load(&lock_path)?;
@@ -176,6 +184,7 @@ fn main() -> Result<()> {
                             &entry.slug,
                             Some(&entry.hub_id),
                             quiet,
+                            force,
                             approver,
                         )?;
                     }

@@ -156,5 +156,8 @@ pub enum SkillAction {
         /// Hub identifier.
         #[arg(long)]
         hub: Option<String>,
+        /// Force update via remove + reinstall when no update lifecycle section exists.
+        #[arg(long)]
+        force: bool,
     },
 }

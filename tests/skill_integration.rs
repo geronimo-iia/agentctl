@@ -122,7 +122,17 @@ fn skill_remove_installed_skill() {
     assert!(String::from_utf8_lossy(&out.stdout).contains("No skills installed"));
 }
 
-// ── skill install error paths ─────────────────────────────────────────────────
+// ── skill update ─────────────────────────────────────────────────────────────
+
+#[test]
+fn skill_update_force_flag_in_help() {
+    let out = agentctl()
+        .args(["skill", "update", "--help"])
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    assert!(String::from_utf8_lossy(&out.stdout).contains("--force"));
+}
 
 #[test]
 fn skill_install_no_hub_configured_fails() {

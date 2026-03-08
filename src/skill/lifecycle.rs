@@ -80,6 +80,26 @@ pub fn execute_lifecycle(
     Ok(())
 }
 
+pub fn execute_update(
+    lf: &LifecycleFile,
+    vars: &HashMap<String, String>,
+    quiet: bool,
+    force: bool,
+    approver: Approver,
+    executor: Executor,
+) -> Result<()> {
+    if lf.update.is_empty() {
+        if !force {
+            bail!("skill has no update lifecycle — use --force to reinstall");
+        }
+        execute_lifecycle(&lf.uninstall, vars, quiet, approver, executor)?;
+        execute_lifecycle(&lf.install, vars, quiet, approver, executor)?;
+    } else {
+        execute_lifecycle(&lf.update, vars, quiet, approver, executor)?;
+    }
+    Ok(())
+}
+
 pub fn sh_executor(cmd: &str) -> Result<()> {
     let status = std::process::Command::new("sh")
         .arg("-c")
@@ -157,5 +177,42 @@ install:
         // quiet=true, approver never called — should succeed
         let result = execute_lifecycle(&lf.install, &vars, true, |_| false, |_| Ok(()));
         assert!(result.is_ok());
+    }
+
+    const YAML_NO_UPDATE: &str = r#"
+install:
+  - command: echo install
+    description: Install
+    requires_approval: false
+uninstall:
+  - command: echo uninstall
+    description: Uninstall
+    requires_approval: false
+"#;
+
+    #[test]
+    fn execute_update_no_section_errors_without_force() {
+        let lf = parse(YAML_NO_UPDATE).unwrap();
+        assert!(execute_update(&lf, &base_vars(), true, false, |_| true, |_| Ok(())).is_err());
+    }
+
+    #[test]
+    fn execute_update_no_section_force_runs_uninstall_then_install() {
+        let lf = parse(YAML_NO_UPDATE).unwrap();
+        // force=true with no update section should succeed (runs uninstall then install)
+        assert!(execute_update(&lf, &base_vars(), true, true, |_| true, |_| Ok(())).is_ok());
+    }
+
+    #[test]
+    fn execute_update_with_section_runs_update() {
+        let yaml = r#"
+update:
+  - command: echo update
+    description: Update
+    requires_approval: false
+"#;
+        let lf = parse(yaml).unwrap();
+        // succeeds and runs the update section (verified by no error)
+        assert!(execute_update(&lf, &base_vars(), true, false, |_| true, |_| Ok(())).is_ok());
     }
 }
