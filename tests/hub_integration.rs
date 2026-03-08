@@ -18,7 +18,7 @@ fn fixture(name: &str) -> PathBuf {
 fn version_flag() {
     let output = agentctl().arg("--version").output().unwrap();
     assert!(output.status.success());
-    assert!(String::from_utf8_lossy(&output.stdout).contains("0.1.0"));
+    assert!(String::from_utf8_lossy(&output.stdout).contains(env!("CARGO_PKG_VERSION")));
 }
 
 #[test]
@@ -111,6 +111,33 @@ fn generate_docs_index() {
         serde_json::from_str(&std::fs::read_to_string(&output).unwrap()).unwrap();
     assert_eq!(json["type"], "docs");
     assert!(json["metadata"]["total_entries"].as_u64().unwrap() > 0);
+}
+
+// ── Generate skills ──────────────────────────────────────────────────────────
+
+#[test]
+fn generate_skills_index_version() {
+    let dir = tempfile::tempdir().unwrap();
+    let output = dir.path().join("index.json");
+
+    let status = agentctl()
+        .args(["hub", "generate", "--type", "skills", "--path"])
+        .arg(fixture("skills-hub-valid"))
+        .arg("--output")
+        .arg(&output)
+        .status()
+        .unwrap();
+
+    assert!(status.success());
+    let json: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(&output).unwrap()).unwrap();
+    let skill = json["skills"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|s| s["slug"] == "my-skill")
+        .unwrap();
+    assert_eq!(skill["version"], "1.2.3");
 }
 
 // ── Hub registry ──────────────────────────────────────────────────────────────
