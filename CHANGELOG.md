@@ -6,6 +6,25 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and 
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-15
+
+### Added
+
+- `agentctl skill install <name> [--hub <id>] [--mode <mode>]` — install skill from registered hub
+- `agentctl skill list` — list installed skills from lock file
+- `agentctl skill remove <name> --hub <id>` — run uninstall lifecycle, remove dir, update lock
+- `agentctl skill update [<name>] [--hub <id>] [--force]` — update to latest version; errors if no `update` lifecycle section unless `--force` (reinstalls via uninstall+install)
+- `--quiet` / `-q` global flag — suppress all step output, implies `--yes`
+- `--yes` / `-y` global flag — auto-approve all `requires_approval` lifecycle steps
+- `--lock <path>` global flag — override lock file path (default: `~/.agentctl/skills.lock.json`)
+- `src/skill/mod.rs` — install/list/remove/update with git clone and dir copy
+- `src/skill/lifecycle.rs` — `execute_lifecycle` and `execute_update` with injectable `Approver`/`Executor`
+- `src/skill/vars.rs` — `${VAR}` expansion with built-ins (`SKILL_NAME`, `SKILL_PATH`, `HOME`, `PLATFORM`) and custom vars
+- `src/skill/lock.rs` — `skills.lock.json` read/write
+- `tests/common/mod.rs` — shared test helpers (`agentctl`, `fixture`, `with_config`, `with_lock`, `with_config_and_lock`)
+- `tests/skill_integration.rs` — 11 integration tests
+- 45 unit + 14 hub integration + 11 skill integration = 70 tests total
+
 ## [0.2.0] - 2026-07-15
 
 ### Added

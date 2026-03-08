@@ -298,7 +298,7 @@ Add to `Cargo.toml`: `ureq = { version = "2", features = ["json"] }`, `toml = "0
 
 ---
 
-## Phase 3 — Skill Management
+## Phase 3 — Skill Management ✅ DONE
 
 **Goal**: Install, list, and remove skills from registered hubs.
 
@@ -413,9 +413,9 @@ Refactor `hub_integration.rs` to use `common::*` as first step of Phase 3.
 - [x] `execute_update()` extracted into `lifecycle.rs` with 3 unit tests
 - [x] `tests/skill_integration.rs` — 11 integration tests (list, remove, install error paths, `--force` in help)
 - [x] 45 unit + 14 hub integration + 11 skill integration = 70 tests passing
-- [ ] `README.md` updated with `skill` command usage examples
-- [ ] `cargo fmt`, `cargo clippy -- -D warnings`, `cargo audit` pass
-- [ ] `CHANGELOG.md` updated, tag `v0.3.0` → release
+- [x] `README.md` updated with `skill` command usage examples
+- [x] `cargo fmt`, `cargo clippy -- -D warnings`, `cargo audit` pass
+- [x] `CHANGELOG.md` updated, tag `v0.3.0` → release
 
 ## Phase 4 — Doc Hub & MCP Management
 
