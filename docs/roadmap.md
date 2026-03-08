@@ -305,11 +305,16 @@ Add to `Cargo.toml`: `ureq = { version = "2", features = ["json"] }`, `toml = "0
 ### Commands
 
 ```
-agentctl skill install <name> [--hub <id>] [--mode <mode>]
+agentctl [--quiet] [--yes]
+agentctl skill install <name> [--hub <id>] [--mode <mode>] [--yes]
 agentctl skill list
-agentctl skill remove <name>
-agentctl skill update [<name>]
+agentctl skill remove <name> [--yes]
+agentctl skill update [<name>] [--yes]
 ```
+
+**Global flags** (available on all commands via `global = true` in clap):
+- `--quiet` / `-q` — suppress all step output; implies `--yes` (no interactive prompts)
+- `--yes` / `-y` — auto-approve all `requires_approval` steps; output remains visible
 
 ### Scope
 
@@ -345,7 +350,7 @@ New modules: `src/skill/lifecycle.rs` + `src/skill/vars.rs`. No new dependencies
   Approve? [y/N]
 ```
 
-**Testability**: `execute_lifecycle(section, steps, vars, approver: fn(&str) -> bool)` — inject approver for tests (always-yes / always-no).
+**Testability**: `execute_lifecycle(steps, vars, quiet: bool, approver: Approver, executor: Executor)` — inject approver for tests (`always_yes` / `always_no`). When `quiet = true`, step output is suppressed and approver is never called.
 
 ### New modules
 
@@ -353,6 +358,12 @@ New modules: `src/skill/lifecycle.rs` + `src/skill/vars.rs`. No new dependencies
 - `src/skill/lifecycle.rs` — parse and execute `lifecycle.yaml`
 - `src/skill/vars.rs` — built-in + custom variable resolution
 - `src/skill/lock.rs` — read/write `~/.agentctl/skills.lock.json`
+
+**Flag resolution in `main.rs`**:
+```rust
+let quiet = cli.quiet;
+let approver: Approver = if quiet || cli.yes { |_| true } else { prompt_user };
+```
 
 ### Test structure
 
@@ -371,13 +382,13 @@ Refactor `hub_integration.rs` to use `common::*` as first step of Phase 3.
 
 1. Refactor `tests/hub_integration.rs` — extract `agentctl()`, `fixture()`, `with_config()` to `tests/common/mod.rs`
 2. Implement `src/skill/vars.rs` — built-in + custom variable resolution with unit tests
-3. Implement `src/skill/lifecycle.rs` — parse `lifecycle.yaml`, platform filter, approval prompt, `sh -c` execution
+3. Implement `src/skill/lifecycle.rs` — parse `lifecycle.yaml`, platform filter, `quiet` flag, `Approver`/`Executor` injection, `sh -c` execution
 4. Implement `src/skill/lock.rs` — read/write `~/.agentctl/skills.lock.json`
 5. Implement `src/skill/mod.rs` — `skill install`: resolve hub from cache, sparse-clone at pinned commit, copy skill dir, run lifecycle `install` section, write lock entry
 6. Implement `skill list` — read lock file, print installed skills
 7. Implement `skill remove` — run lifecycle `uninstall` section, remove dir, remove lock entry
 8. Implement `skill update` — compare versions, re-clone at new commit, run lifecycle `update` section, update lock entry
-9. Wire CLI — add `SkillAction` variants to `cli.rs`, dispatch in `main.rs`
+9. Wire CLI — add `SkillAction` variants to `cli.rs`, add `--quiet`/`--yes` global flags to root `Cli` struct, dispatch in `main.rs`
 10. Write `tests/skill_integration.rs` — install/list/remove/update using fixtures and injected approver
 11. Update `README.md` — add `skill install/list/remove/update` usage examples
 12. `cargo fmt`, `cargo clippy -- -D warnings`, `cargo audit` pass
@@ -387,9 +398,11 @@ Refactor `hub_integration.rs` to use `common::*` as first step of Phase 3.
 
 - [ ] `tests/common/mod.rs` extracted, `hub_integration.rs` refactored
 - [ ] `src/skill/vars.rs` — variable resolution with unit tests (built-ins, custom, forward-ref error)
-- [ ] `src/skill/lifecycle.rs` — parse, platform filter, approval injection, execution
+- [ ] `src/skill/lifecycle.rs` — parse, platform filter, approval injection, `quiet` flag, execution
 - [ ] `src/skill/lock.rs` — read/write lock file with tests
 - [ ] `agentctl skill install/list/remove/update` implemented and tested
+- [ ] `--quiet` global flag — suppresses output, implies `--yes`
+- [ ] `--yes` global flag — auto-approves all steps, output visible
 - [ ] `lifecycle.yaml` executed on install/remove/update with user approval prompt
 - [ ] Lock file written on install, updated on update, removed on uninstall
 - [ ] `README.md` updated with `skill` command usage examples
