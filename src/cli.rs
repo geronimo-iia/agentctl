@@ -77,30 +77,18 @@ pub enum HubAction {
 
     /// Remove a hub from the local config.
     Remove {
-        /// Hub kind (skills or docs).
-        #[arg(long, value_enum)]
-        r#type: HubType,
-
         /// Hub identifier to remove.
         id: String,
     },
 
     /// Enable a registered hub.
     Enable {
-        /// Hub kind (skills or docs).
-        #[arg(long, value_enum)]
-        r#type: HubType,
-
         /// Hub identifier to enable.
         id: String,
     },
 
     /// Disable a registered hub.
     Disable {
-        /// Hub kind (skills or docs).
-        #[arg(long, value_enum)]
-        r#type: HubType,
-
         /// Hub identifier to disable.
         id: String,
     },

@@ -102,18 +102,18 @@ fn main() -> Result<()> {
                 }
             }
 
-            HubAction::Remove { r#type, id } => {
-                hub::registry::remove(&cfg_path, hub_kind(r#type), &id)?;
+            HubAction::Remove { id } => {
+                hub::registry::remove(&cfg_path, &id)?;
                 println!("✓ Removed hub '{id}'");
             }
 
-            HubAction::Enable { r#type, id } => {
-                hub::registry::set_enabled(&cfg_path, hub_kind(r#type), &id, true)?;
+            HubAction::Enable { id } => {
+                hub::registry::set_enabled(&cfg_path, &id, true)?;
                 println!("✓ Enabled hub '{id}'");
             }
 
-            HubAction::Disable { r#type, id } => {
-                hub::registry::set_enabled(&cfg_path, hub_kind(r#type), &id, false)?;
+            HubAction::Disable { id } => {
+                hub::registry::set_enabled(&cfg_path, &id, false)?;
                 println!("✓ Disabled hub '{id}'");
             }
 

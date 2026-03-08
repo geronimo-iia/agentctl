@@ -75,6 +75,41 @@ On failure (exit code 1):
 }
 ```
 
+## Hub Registry
+
+Register and manage hub sources in `~/.agentctl/config.json`:
+
+```bash
+agentctl hub add --type skills agent-foundation https://raw.githubusercontent.com/geronimo-iia/agent-foundation/main/skills/index.json
+agentctl hub add --type docs agent-foundation https://raw.githubusercontent.com/geronimo-iia/agent-foundation/main/docs/index.json
+agentctl hub list
+agentctl hub disable agent-foundation
+agentctl hub enable agent-foundation
+agentctl hub remove agent-foundation
+agentctl hub refresh agent-foundation   # force-refresh one hub
+agentctl hub refresh                    # refresh all enabled hubs
+```
+
+## agentctl.toml
+
+Optional file at the hub root to set the hub ID and ignore patterns:
+
+```toml
+[hub]
+id = "agent-foundation"
+
+[generate]
+ignore = [
+  "README.md",
+  "CHANGELOG.md",
+  "CONTRIBUTING.md",
+  "ARCHIVED.md",
+  "draft-*.md",
+]
+```
+
+CLI flags take precedence over `agentctl.toml` values. See [docs/hub-config.md](docs/hub-config.md) for full details.
+
 ## CI Integration
 
 Example GitHub Actions workflow for a docs or skills hub:

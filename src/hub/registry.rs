@@ -41,21 +41,23 @@ pub fn add(
     cfg.save_to(config_path)
 }
 
-pub fn remove(config_path: &Path, kind: HubKind, id: &str) -> Result<()> {
+pub fn remove(config_path: &Path, id: &str) -> Result<()> {
     let mut cfg = Config::load_from(config_path)?;
-    let hubs = hubs_mut(&mut cfg, &kind);
-    let before = hubs.len();
-    hubs.retain(|h| h.id != id);
-    if hubs.len() == before {
+    let before = cfg.skill_hubs.len() + cfg.doc_hubs.len();
+    cfg.skill_hubs.retain(|h| h.id != id);
+    cfg.doc_hubs.retain(|h| h.id != id);
+    if cfg.skill_hubs.len() + cfg.doc_hubs.len() == before {
         bail!("hub '{id}' not found");
     }
     cfg.save_to(config_path)
 }
 
-pub fn set_enabled(config_path: &Path, kind: HubKind, id: &str, enabled: bool) -> Result<()> {
+pub fn set_enabled(config_path: &Path, id: &str, enabled: bool) -> Result<()> {
     let mut cfg = Config::load_from(config_path)?;
-    let hub = hubs_mut(&mut cfg, &kind)
+    let hub = cfg
+        .skill_hubs
         .iter_mut()
+        .chain(cfg.doc_hubs.iter_mut())
         .find(|h| h.id == id)
         .ok_or_else(|| anyhow::anyhow!("hub '{id}' not found"))?;
     hub.enabled = enabled;
@@ -185,7 +187,7 @@ mod tests {
     fn remove_existing_hub() {
         let dir = TempDir::new().unwrap();
         let path = seed(&dir);
-        remove(&path, HubKind::Skill, "agent-foundation").unwrap();
+        remove(&path, "agent-foundation").unwrap();
         let cfg = Config::load_from(&path).unwrap();
         assert!(cfg.skill_hubs.is_empty());
     }
@@ -194,7 +196,7 @@ mod tests {
     fn remove_missing_errors() {
         let dir = TempDir::new().unwrap();
         let path = seed(&dir);
-        let err = remove(&path, HubKind::Skill, "no-such-hub").unwrap_err();
+        let err = remove(&path, "no-such-hub").unwrap_err();
         assert!(err.to_string().contains("not found"));
     }
 
@@ -202,9 +204,9 @@ mod tests {
     fn disable_and_enable_hub() {
         let dir = TempDir::new().unwrap();
         let path = seed(&dir);
-        set_enabled(&path, HubKind::Skill, "agent-foundation", false).unwrap();
+        set_enabled(&path, "agent-foundation", false).unwrap();
         assert!(!Config::load_from(&path).unwrap().skill_hubs[0].enabled);
-        set_enabled(&path, HubKind::Skill, "agent-foundation", true).unwrap();
+        set_enabled(&path, "agent-foundation", true).unwrap();
         assert!(Config::load_from(&path).unwrap().skill_hubs[0].enabled);
     }
 

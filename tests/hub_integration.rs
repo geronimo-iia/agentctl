@@ -186,7 +186,7 @@ fn hub_remove() {
         .status()
         .unwrap();
     let status = with_config(&dir)
-        .args(["hub", "remove", "--type", "skills", "my-hub"])
+        .args(["hub", "remove", "my-hub"])
         .status()
         .unwrap();
     assert!(status.success());
@@ -211,7 +211,7 @@ fn hub_enable_disable() {
         .unwrap();
 
     let status = with_config(&dir)
-        .args(["hub", "disable", "--type", "skills", "my-hub"])
+        .args(["hub", "disable", "my-hub"])
         .status()
         .unwrap();
     assert!(status.success());
@@ -219,7 +219,7 @@ fn hub_enable_disable() {
     assert!(String::from_utf8_lossy(&out.stdout).contains("disabled"));
 
     let status = with_config(&dir)
-        .args(["hub", "enable", "--type", "skills", "my-hub"])
+        .args(["hub", "enable", "my-hub"])
         .status()
         .unwrap();
     assert!(status.success());
