@@ -289,7 +289,7 @@ Add to `Cargo.toml`: `ureq = { version = "2", features = ["json"] }`, `toml = "0
 - [x] No dead code — `Config::load`/`save` wrappers removed, all `#[allow(dead_code)]` eliminated
 - [x] Index cache with TTL at `~/.agentctl/cache/hubs/<id>/index.json`
 - [x] Tests for registry commands, `agentctl.toml` loading, default exclusions, CLI override
-- [x] 28 unit tests + 13 integration tests passing
+- [x] 28 unit tests + 14 integration tests passing
 - [x] `docs/hub-config.md` — `agentctl.toml` format spec and cache design
 - [x] `README.md` updated with `agentctl.toml` section and example
 - [x] Example `agentctl.toml` committed to `agent-foundation` and `agent-skills` repos
