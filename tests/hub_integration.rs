@@ -112,3 +112,117 @@ fn generate_docs_index() {
     assert_eq!(json["type"], "docs");
     assert!(json["metadata"]["total_entries"].as_u64().unwrap() > 0);
 }
+
+// ── Hub registry ──────────────────────────────────────────────────────────────
+
+fn with_config(dir: &tempfile::TempDir) -> std::process::Command {
+    let mut cmd = agentctl();
+    cmd.args(["--config", dir.path().join("config.json").to_str().unwrap()]);
+    cmd
+}
+
+#[test]
+fn hub_add_and_list() {
+    let dir = tempfile::tempdir().unwrap();
+    let status = with_config(&dir)
+        .args([
+            "hub",
+            "add",
+            "--type",
+            "skills",
+            "my-hub",
+            "https://example.com/index.json",
+        ])
+        .status()
+        .unwrap();
+    assert!(status.success());
+
+    let output = with_config(&dir).args(["hub", "list"]).output().unwrap();
+    assert!(output.status.success());
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("my-hub"));
+}
+
+#[test]
+fn hub_add_duplicate_fails() {
+    let dir = tempfile::tempdir().unwrap();
+    with_config(&dir)
+        .args([
+            "hub",
+            "add",
+            "--type",
+            "skills",
+            "my-hub",
+            "https://example.com/index.json",
+        ])
+        .status()
+        .unwrap();
+    let status = with_config(&dir)
+        .args([
+            "hub",
+            "add",
+            "--type",
+            "skills",
+            "my-hub",
+            "https://example.com/index.json",
+        ])
+        .status()
+        .unwrap();
+    assert!(!status.success());
+}
+
+#[test]
+fn hub_remove() {
+    let dir = tempfile::tempdir().unwrap();
+    with_config(&dir)
+        .args([
+            "hub",
+            "add",
+            "--type",
+            "skills",
+            "my-hub",
+            "https://example.com/index.json",
+        ])
+        .status()
+        .unwrap();
+    let status = with_config(&dir)
+        .args(["hub", "remove", "--type", "skills", "my-hub"])
+        .status()
+        .unwrap();
+    assert!(status.success());
+
+    let output = with_config(&dir).args(["hub", "list"]).output().unwrap();
+    assert!(!String::from_utf8_lossy(&output.stdout).contains("my-hub"));
+}
+
+#[test]
+fn hub_enable_disable() {
+    let dir = tempfile::tempdir().unwrap();
+    with_config(&dir)
+        .args([
+            "hub",
+            "add",
+            "--type",
+            "skills",
+            "my-hub",
+            "https://example.com/index.json",
+        ])
+        .status()
+        .unwrap();
+
+    let status = with_config(&dir)
+        .args(["hub", "disable", "--type", "skills", "my-hub"])
+        .status()
+        .unwrap();
+    assert!(status.success());
+    let out = with_config(&dir).args(["hub", "list"]).output().unwrap();
+    assert!(String::from_utf8_lossy(&out.stdout).contains("disabled"));
+
+    let status = with_config(&dir)
+        .args(["hub", "enable", "--type", "skills", "my-hub"])
+        .status()
+        .unwrap();
+    assert!(status.success());
+    let out = with_config(&dir).args(["hub", "list"]).output().unwrap();
+    assert!(String::from_utf8_lossy(&out.stdout).contains("enabled"));
+}

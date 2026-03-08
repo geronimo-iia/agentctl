@@ -6,6 +6,10 @@ use clap::{Parser, Subcommand, ValueEnum};
 #[derive(Parser)]
 #[command(name = "agentctl", version, about, long_about = None)]
 pub struct Cli {
+    /// Path to the config file (default: ~/.agentctl/config.json).
+    #[arg(long, global = true)]
+    pub config: Option<PathBuf>,
+
     #[command(subcommand)]
     pub command: Command,
 }
