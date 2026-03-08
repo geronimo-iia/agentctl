@@ -294,7 +294,7 @@ Add to `Cargo.toml`: `ureq = { version = "2", features = ["json"] }`, `toml = "0
 - [x] `README.md` updated with `agentctl.toml` section and example
 - [x] Example `agentctl.toml` committed to `agent-foundation` and `agent-skills` repos
 - [x] `cargo fmt`, `cargo clippy -- -D warnings`, `cargo audit` pass
-- [ ] `CHANGELOG.md` updated, tag `v0.2.0` → release
+- [x] `CHANGELOG.md` updated, tag `v0.2.0` → release
 
 ---
 
