@@ -1,7 +1,5 @@
 mod cli;
-mod config;
-mod hub;
-mod skill;
+use agentctl::{config, hub, skill};
 
 use anyhow::Result;
 use clap::Parser;

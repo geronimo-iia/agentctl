@@ -18,6 +18,10 @@ exclude = [".github/", "tests/fixtures/", "docs/"]
 name = "agentctl"
 path = "src/main.rs"
 
+[lib]
+name = "agentctl"
+path = "src/lib.rs"
+
 [dependencies]
 clap = { version = "4", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
