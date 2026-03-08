@@ -1,16 +1,6 @@
-use std::path::PathBuf;
-use std::process::Command;
-
-fn agentctl() -> Command {
-    let bin = env!("CARGO_BIN_EXE_agentctl");
-    Command::new(bin)
-}
-
-fn fixture(name: &str) -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("tests/fixtures")
-        .join(name)
-}
+#[path = "common/mod.rs"]
+mod common;
+use common::{agentctl, fixture, with_config};
 
 // ── CLI flags ─────────────────────────────────────────────────────────────────
 
@@ -41,7 +31,6 @@ fn hub_help_flag() {
 
 #[test]
 fn validate_skills_hub_valid() {
-    // only my-skill passes; bad-skill has wrong fields — use a single-skill fixture
     let status = agentctl()
         .args(["hub", "validate", "--type", "skills", "--path"])
         .arg(fixture("skills-hub-valid"))
@@ -62,7 +51,6 @@ fn validate_skills_hub_rejects_bad_frontmatter() {
 
 #[test]
 fn validate_skills_hub_ignores_git_dir() {
-    // skills-hub contains .git/ — validation must still pass on valid skills
     let status = agentctl()
         .args(["hub", "validate", "--type", "skills", "--path"])
         .arg(fixture("skills-hub-valid"))
@@ -142,22 +130,12 @@ fn generate_skills_index_version() {
 
 // ── Hub registry ──────────────────────────────────────────────────────────────
 
-fn with_config(dir: &tempfile::TempDir) -> std::process::Command {
-    let mut cmd = agentctl();
-    cmd.args(["--config", dir.path().join("config.json").to_str().unwrap()]);
-    cmd
-}
-
 #[test]
 fn hub_add_and_list() {
     let dir = tempfile::tempdir().unwrap();
     let status = with_config(&dir)
         .args([
-            "hub",
-            "add",
-            "--type",
-            "skills",
-            "my-hub",
+            "hub", "add", "--type", "skills", "my-hub",
             "https://example.com/index.json",
         ])
         .status()
@@ -166,8 +144,7 @@ fn hub_add_and_list() {
 
     let output = with_config(&dir).args(["hub", "list"]).output().unwrap();
     assert!(output.status.success());
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    assert!(stdout.contains("my-hub"));
+    assert!(String::from_utf8_lossy(&output.stdout).contains("my-hub"));
 }
 
 #[test]
@@ -175,22 +152,14 @@ fn hub_add_duplicate_fails() {
     let dir = tempfile::tempdir().unwrap();
     with_config(&dir)
         .args([
-            "hub",
-            "add",
-            "--type",
-            "skills",
-            "my-hub",
+            "hub", "add", "--type", "skills", "my-hub",
             "https://example.com/index.json",
         ])
         .status()
         .unwrap();
     let status = with_config(&dir)
         .args([
-            "hub",
-            "add",
-            "--type",
-            "skills",
-            "my-hub",
+            "hub", "add", "--type", "skills", "my-hub",
             "https://example.com/index.json",
         ])
         .status()
@@ -203,11 +172,7 @@ fn hub_remove() {
     let dir = tempfile::tempdir().unwrap();
     with_config(&dir)
         .args([
-            "hub",
-            "add",
-            "--type",
-            "skills",
-            "my-hub",
+            "hub", "add", "--type", "skills", "my-hub",
             "https://example.com/index.json",
         ])
         .status()
@@ -227,11 +192,7 @@ fn hub_enable_disable() {
     let dir = tempfile::tempdir().unwrap();
     with_config(&dir)
         .args([
-            "hub",
-            "add",
-            "--type",
-            "skills",
-            "my-hub",
+            "hub", "add", "--type", "skills", "my-hub",
             "https://example.com/index.json",
         ])
         .status()
