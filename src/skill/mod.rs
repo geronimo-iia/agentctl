@@ -65,7 +65,7 @@ pub fn install(
     };
 
     // load index from cache
-    let index_json = cache::get(&hub.id, &hub.index_url, 6)?;
+    let index_json = cache::get(&hub.id, &hub.index_url, hub.ttl_hours)?;
     let index: serde_json::Value = serde_json::from_str(&index_json)?;
 
     // find skill entry in index
