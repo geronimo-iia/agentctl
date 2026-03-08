@@ -90,6 +90,41 @@ agentctl hub refresh agent-foundation   # force-refresh one hub
 agentctl hub refresh                    # refresh all enabled hubs
 ```
 
+## Skill Management
+
+Install, list, remove, and update skills from registered hubs.
+
+```bash
+# install from the first enabled skill hub
+agentctl skill install python-scaffold
+
+# install from a specific hub
+agentctl skill install python-scaffold --hub agent-foundation
+
+# install into a named mode (path: ~/.agent/skills-dev/)
+agentctl skill install python-scaffold --mode dev
+
+# list installed skills
+agentctl skill list
+
+# remove a skill
+agentctl skill remove python-scaffold --hub agent-foundation
+
+# update a skill (errors if no update lifecycle — use --force to reinstall)
+agentctl skill update python-scaffold
+agentctl skill update python-scaffold --force
+
+# update all installed skills
+agentctl skill update
+```
+
+**Global flags:**
+- `-q` / `--quiet` — suppress all step output; implies `--yes`
+- `-y` / `--yes` — auto-approve all `requires_approval` lifecycle steps
+
+Skills are installed to `~/.agent/skills/<name>/` and tracked in `~/.agentctl/skills.lock.json`.
+Each skill may include a `lifecycle.yaml` with `install`, `update`, and `uninstall` sections.
+
 ## agentctl.toml
 
 Optional file at the hub root. When present, values are used as defaults; CLI flags always take precedence.

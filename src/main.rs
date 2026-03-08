@@ -1,15 +1,29 @@
 mod cli;
-mod config;
-mod hub;
+use agentctl::{config, hub, skill};
 
 use anyhow::Result;
 use clap::Parser;
 
-use cli::{Cli, Command, HubAction, HubType};
+use cli::{Cli, Command, HubAction, HubType, SkillAction};
+
+fn prompt_user(_cmd: &str) -> bool {
+    use std::io::{BufRead, Write};
+    std::io::stdout().flush().ok();
+    let mut line = String::new();
+    std::io::stdin().lock().read_line(&mut line).ok();
+    matches!(line.trim().to_lowercase().as_str(), "y" | "yes")
+}
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
     let cfg_path = cli.config.unwrap_or_else(config::config_path);
+    let lock_path = cli.lock.unwrap_or_else(skill::lock::lock_path);
+    let quiet = cli.quiet;
+    let approver: skill::lifecycle::Approver = if quiet || cli.yes {
+        |_| true
+    } else {
+        prompt_user
+    };
 
     match cli.command {
         Command::Hub { action } => match action {
@@ -125,6 +139,53 @@ fn main() -> Result<()> {
                 None => {
                     hub::registry::refresh_all(&cfg_path)?;
                     println!("✓ Refreshed all enabled hubs");
+                }
+            },
+        },
+
+        Command::Skill { action } => match action {
+            SkillAction::Install { name, hub, mode } => {
+                skill::install(
+                    &cfg_path,
+                    &lock_path,
+                    &name,
+                    hub.as_deref(),
+                    mode.as_deref(),
+                    quiet,
+                    approver,
+                )?;
+            }
+            SkillAction::List => {
+                skill::list(&lock_path)?;
+            }
+            SkillAction::Remove { name, hub } => {
+                skill::remove(&lock_path, &name, &hub, quiet, approver)?;
+            }
+            SkillAction::Update { name, hub, force } => match name {
+                Some(n) => {
+                    skill::update(
+                        &cfg_path,
+                        &lock_path,
+                        &n,
+                        hub.as_deref(),
+                        quiet,
+                        force,
+                        approver,
+                    )?;
+                }
+                None => {
+                    let lock = skill::lock::LockFile::load(&lock_path)?;
+                    for entry in lock.skills.values() {
+                        skill::update(
+                            &cfg_path,
+                            &lock_path,
+                            &entry.slug,
+                            Some(&entry.hub_id),
+                            quiet,
+                            force,
+                            approver,
+                        )?;
+                    }
                 }
             },
         },

@@ -10,6 +10,18 @@ pub struct Cli {
     #[arg(long, global = true)]
     pub config: Option<PathBuf>,
 
+    /// Path to the skills lock file (default: ~/.agentctl/skills.lock.json).
+    #[arg(long, global = true)]
+    pub lock: Option<PathBuf>,
+
+    /// Suppress all output; implies --yes.
+    #[arg(long, short = 'q', global = true)]
+    pub quiet: bool,
+
+    /// Auto-approve all lifecycle steps without prompting.
+    #[arg(long, short = 'y', global = true)]
+    pub yes: bool,
+
     #[command(subcommand)]
     pub command: Command,
 }
@@ -20,6 +32,11 @@ pub enum Command {
     Hub {
         #[command(subcommand)]
         action: HubAction,
+    },
+    /// Manage installed skills.
+    Skill {
+        #[command(subcommand)]
+        action: SkillAction,
     },
 }
 
@@ -107,4 +124,40 @@ pub enum HubType {
     Skills,
     /// Documentation hub containing Markdown files.
     Docs,
+}
+
+#[derive(Subcommand)]
+pub enum SkillAction {
+    /// Install a skill from a registered hub.
+    Install {
+        /// Skill name.
+        name: String,
+        /// Hub identifier to install from.
+        #[arg(long)]
+        hub: Option<String>,
+        /// Install mode (sets install path to ~/.agent/skills-{mode}/).
+        #[arg(long)]
+        mode: Option<String>,
+    },
+    /// List installed skills.
+    List,
+    /// Remove an installed skill.
+    Remove {
+        /// Skill name.
+        name: String,
+        /// Hub identifier the skill was installed from.
+        #[arg(long)]
+        hub: String,
+    },
+    /// Update an installed skill to the latest version.
+    Update {
+        /// Skill name. Updates all skills if omitted.
+        name: Option<String>,
+        /// Hub identifier.
+        #[arg(long)]
+        hub: Option<String>,
+        /// Force update via remove + reinstall when no update lifecycle section exists.
+        #[arg(long)]
+        force: bool,
+    },
 }
