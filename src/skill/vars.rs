@@ -29,6 +29,7 @@ pub fn expand(template: &str, vars: &HashMap<String, String>) -> Result<String> 
     Ok(result)
 }
 
+#[allow(dead_code)]
 pub fn resolve(
     skill_name: &str,
     skill_path: &str,
