@@ -354,6 +354,19 @@ New modules: `src/skill/lifecycle.rs` + `src/skill/vars.rs`. No new dependencies
 - `src/skill/vars.rs` — built-in + custom variable resolution
 - `src/skill/lock.rs` — read/write `~/.agentctl/skills.lock.json`
 
+### Test structure
+
+Split integration tests by command group:
+
+```
+tests/
+├── common/mod.rs          # shared: agentctl(), fixture(), with_config()
+├── hub_integration.rs     # existing hub tests (refactored to use common)
+└── skill_integration.rs   # Phase 3 skill tests
+```
+
+Refactor `hub_integration.rs` to use `common::*` as first step of Phase 3.
+
 ## Phase 4 — Doc Hub & MCP Management
 
 Covered in [hub-management.md](hub-management.md), [mcp-management.md](mcp-management.md), [skill-management.md](skill-management.md).
