@@ -278,16 +278,18 @@ Add to `Cargo.toml`: `ureq = { version = "2", features = ["json"] }`, `toml = "0
 
 ### Exit criteria
 
-- [ ] `agentctl hub add/list/remove/enable/disable` implemented and tested
-- [ ] `agentctl hub refresh [<id>|--all]` implemented — refreshes one or all enabled hubs
-- [ ] Stale cache used with warning when network unavailable
-- [ ] `agentctl.toml` read at hub root — `hub_id` and `ignore` respected by validate + generate
-- [ ] Default exclusion list applied when no `agentctl.toml`
-- [ ] CLI flags take precedence over `agentctl.toml` values
-- [ ] `~/.agentctl/config.json` read/write working
-- [ ] Remove `#[allow(dead_code)]` from `src/config.rs` once wired into registry commands
-- [ ] Index cache with TTL at `~/.agentctl/cache/hubs/<id>/index.json`
-- [ ] Tests for registry commands, `agentctl.toml` loading, default exclusions, CLI override
+- [x] `agentctl hub add/list/remove/enable/disable` implemented and tested
+- [x] `agentctl hub refresh [<id>|--all]` implemented — refreshes one or all enabled hubs
+- [x] Stale cache used with warning when network unavailable
+- [x] `agentctl.toml` read at hub root — `hub_id` and `ignore` respected by validate + generate
+- [x] Default exclusion list applied when no `agentctl.toml`
+- [x] CLI flags take precedence over `agentctl.toml` values
+- [x] `~/.agentctl/config.json` read/write working
+- [x] `--config` flag added for test isolation and explicit config path override
+- [ ] `#[allow(dead_code)]` on `Config::load`/`save` (config.rs), `cache.rs`, `registry.rs` — remove all when Phase 3 wires them in
+- [x] Index cache with TTL at `~/.agentctl/cache/hubs/<id>/index.json`
+- [x] Tests for registry commands, `agentctl.toml` loading, default exclusions, CLI override
+- [x] 28 unit tests + 13 integration tests passing
 - [ ] `docs/hub-config.md` — `agentctl.toml` format spec and cache design
 - [ ] `README.md` updated with `agentctl.toml` section and example
 - [ ] Example `agentctl.toml` committed to `agent-foundation` and `agent-skills` repos

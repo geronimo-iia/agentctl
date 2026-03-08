@@ -39,6 +39,7 @@ pub fn config_path() -> PathBuf {
 }
 
 impl Config {
+    #[allow(dead_code)]
     pub fn load() -> Result<Self> {
         Self::load_from(&config_path())
     }
