@@ -216,7 +216,12 @@ fn parse_frontmatter(content: &str) -> Result<serde_yaml::Mapping, String> {
 }
 
 fn glob_md_files(path: &Path, cfg: &HubConfig) -> Vec<std::path::PathBuf> {
-    fn collect_files(dir: &Path, base: &Path, cfg: &HubConfig, files: &mut Vec<std::path::PathBuf>) {
+    fn collect_files(
+        dir: &Path,
+        base: &Path,
+        cfg: &HubConfig,
+        files: &mut Vec<std::path::PathBuf>,
+    ) {
         if let Ok(entries) = std::fs::read_dir(dir) {
             for entry in entries.filter_map(|e| e.ok()) {
                 let p = entry.path();
@@ -232,7 +237,7 @@ fn glob_md_files(path: &Path, cfg: &HubConfig) -> Vec<std::path::PathBuf> {
             }
         }
     }
-    
+
     let mut files = Vec::new();
     collect_files(path, path, cfg, &mut files);
     files
