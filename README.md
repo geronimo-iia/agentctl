@@ -3,6 +3,8 @@
 CLI for agent hub validation, index generation, and skill management.
 Implements the hub formats defined in [agent-foundation](https://github.com/geronimo-iia/agent-foundation).
 
+See [docs/roadmap.md](docs/roadmap.md) for current development plans and upcoming features.
+
 ## Install
 
 **Homebrew** (macOS/Linux):
