@@ -111,7 +111,9 @@ agentctl hub disable agent-foundation
 agentctl hub enable agent-foundation
 agentctl hub remove agent-foundation
 agentctl hub refresh agent-foundation   # force-refresh one hub
+agentctl hub refresh --force agent-foundation  # bypass cache entirely
 agentctl hub refresh                    # refresh all enabled hubs
+agentctl hub refresh --force            # force refresh all hubs
 ```
 
 ## Skill Management

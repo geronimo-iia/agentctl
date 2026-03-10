@@ -13,13 +13,14 @@ last_updated: "2026-07-16"
 
 ## Current Status
 
-agentctl has successfully delivered core functionality through Phase 5:
+agentctl has successfully delivered core functionality through Phase 5.5:
 - ✅ Hub validation and index generation (v0.1.0)
 - ✅ Hub registry with caching (v0.2.0) 
 - ✅ Skill management with lifecycle execution (v0.3.0)
 - ✅ Config management commands (v0.4.0)
 - ✅ Enhanced ignore patterns (v0.4.1)
 - ✅ Skill export (v0.5.0)
+- ✅ Hub refresh enhancement (v0.5.1)
 
 ## Completed Phases
 
@@ -30,6 +31,7 @@ Detailed documentation for completed phases is available in the archive:
 - [Phase 4 — Config Management](archive/phase-4-config-management.md)
 - [Phase 4.5 — Enhanced Ignore Patterns](archive/phase-4.5-enhanced-ignore.md)
 - [Phase 5 — Skill Export](archive/phase-5-skill-export.md)
+- [Phase 5.5 — Hub Refresh Enhancement](archive/phase-5.5-hub-refresh-enhancement.md)
 
 ---
 
