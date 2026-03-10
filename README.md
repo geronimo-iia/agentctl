@@ -13,6 +13,11 @@ brew tap geronimo-iia/agent
 brew install agentctl
 ```
 
+**Chocolatey** (Windows):
+```cmd
+choco install agentctl
+```
+
 **asdf** (version manager):
 ```bash
 asdf plugin add agentctl https://github.com/geronimo-iia/asdf-agentctl.git

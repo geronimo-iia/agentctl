@@ -60,6 +60,13 @@ Complete release process for agentctl following [agent-software standards](https
 - [ ] Commit and push any updates
 - [ ] Test: `asdf install agentctl latest`
 
+### Chocolatey Package Update
+- [ ] Navigate to `chocolatey-agentctl` repository
+- [ ] Verify GitHub Actions workflow triggered automatically
+- [ ] Monitor workflow completion and package creation
+- [ ] Verify package published to Chocolatey community
+- [ ] Test: `choco install agentctl` or `choco upgrade agentctl`
+
 ### Communication
 - [ ] Update external documentation
 - [ ] Update installation instructions
