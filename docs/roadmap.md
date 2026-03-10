@@ -13,13 +13,14 @@ last_updated: "2026-07-16"
 
 ## Current Status
 
-agentctl has successfully delivered core functionality through Phase 5:
+agentctl has successfully delivered core functionality through Phase 5.5:
 - ✅ Hub validation and index generation (v0.1.0)
 - ✅ Hub registry with caching (v0.2.0) 
 - ✅ Skill management with lifecycle execution (v0.3.0)
 - ✅ Config management commands (v0.4.0)
 - ✅ Enhanced ignore patterns (v0.4.1)
 - ✅ Skill export (v0.5.0)
+- ✅ Hub refresh enhancement (v0.5.1)
 
 ## Completed Phases
 
@@ -30,34 +31,7 @@ Detailed documentation for completed phases is available in the archive:
 - [Phase 4 — Config Management](archive/phase-4-config-management.md)
 - [Phase 4.5 — Enhanced Ignore Patterns](archive/phase-4.5-enhanced-ignore.md)
 - [Phase 5 — Skill Export](archive/phase-5-skill-export.md)
-
----
-
-## Phase 5.5 — Hub Refresh Enhancement
-
-**Goal**: Add --force flag to hub refresh command for bypassing cache entirely.
-
-### Commands
-
-```
-agentctl hub refresh --force [<id>]                 # force refresh bypassing cache
-```
-
-### Implementation
-
-- Add --force flag to hub refresh command
-- Force flag deletes cache directory before refresh
-- Ensures fresh fetch from remote index URL
-- Useful for development and troubleshooting
-
-### Exit criteria
-
-- [ ] `agentctl hub refresh --force` deletes cache and fetches fresh index
-- [ ] Works with both single hub and all hubs refresh
-- [ ] Tests covering force refresh functionality
-- [ ] `README.md` updated with --force flag example
-- [ ] `cargo fmt`, `cargo clippy -- -D warnings`, `cargo audit` pass
-- [ ] `CHANGELOG.md` updated, tag `v0.5.1` → release per [release process](docs/release.md)
+- [Phase 5.5 — Hub Refresh Enhancement](archive/phase-5.5-hub-refresh-enhancement.md)
 
 ---
 
