@@ -53,6 +53,13 @@ Complete release process for agentctl following [agent-software standards](https
 - [ ] Update agent-skills `CHANGELOG.md`
 - [ ] Commit and push skill changes
 
+### ASDF Plugin Update
+- [ ] Navigate to `asdf-agentctl` repository
+- [ ] Test plugin works with new release: `./test.sh`
+- [ ] Update `CHANGELOG.md` if plugin changes needed
+- [ ] Commit and push any updates
+- [ ] Test: `asdf install agentctl latest`
+
 ### Communication
 - [ ] Update external documentation
 - [ ] Update installation instructions
