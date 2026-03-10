@@ -6,15 +6,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and 
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-01-16
+
 ### Added
 
-- `docs/release.md` — comprehensive release checklist covering pre-release, release, and post-release tasks
-- Release process documentation references in roadmap and contributing guide
+- `agentctl skill export` — export current skill installations to stdout as JSON for backup and sharing
+- `tests/skill_export_test.rs` — 3 tests covering export functionality with various lock file states
 
 ### Changed
 
-- Updated roadmap Phase 5 exit criteria to reference release process documentation
-- Added "Releases" section to CONTRIBUTING.md with link to release process for maintainers
+- Updated README.md with export command example in skill management section
 
 ## [0.4.1] - 2026-07-16
 

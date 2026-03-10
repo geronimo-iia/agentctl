@@ -191,4 +191,6 @@ pub enum SkillAction {
         #[arg(long)]
         force: bool,
     },
+    /// Export current skill installations to stdout.
+    Export,
 }

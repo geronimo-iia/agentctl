@@ -224,6 +224,9 @@ fn main() -> Result<()> {
                     }
                 }
             },
+            SkillAction::Export => {
+                skill::export(&lock_path)?;
+            }
         },
     }
 
