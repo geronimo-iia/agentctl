@@ -66,6 +66,22 @@ pub fn refresh_one(config_path: &Path, id: &str) -> Result<()> {
     refresh_one_with(config_path, id, None, cache::http_fetch)
 }
 
+pub fn refresh_one_force(config_path: &Path, id: &str) -> Result<()> {
+    let cfg = Config::load_from(config_path)?;
+    let hub = cfg
+        .skill_hubs
+        .iter()
+        .chain(cfg.doc_hubs.iter())
+        .find(|h| h.id == id)
+        .ok_or_else(|| anyhow::anyhow!("hub '{id}' not found"))?;
+    let cache_dir = cache::cache_dir_for(&hub.id);
+    if cache_dir.exists() {
+        std::fs::remove_dir_all(&cache_dir)?;
+    }
+    cache::refresh_to(&cache_dir, &hub.index_url, cache::http_fetch)?;
+    Ok(())
+}
+
 pub fn refresh_one_with(
     config_path: &Path,
     id: &str,
@@ -88,6 +104,28 @@ pub fn refresh_one_with(
 
 pub fn refresh_all(config_path: &Path) -> Result<()> {
     refresh_all_with(config_path, None, cache::http_fetch)
+}
+
+pub fn refresh_all_force(config_path: &Path) -> Result<()> {
+    let cfg = Config::load_from(config_path)?;
+    for hub in cfg
+        .skill_hubs
+        .iter()
+        .chain(cfg.doc_hubs.iter())
+        .filter(|h| h.enabled)
+    {
+        let cache_dir = cache::cache_dir_for(&hub.id);
+        if cache_dir.exists() {
+            if let Err(e) = std::fs::remove_dir_all(&cache_dir) {
+                eprintln!("warning: failed to remove cache for '{}': {e}", hub.id);
+                continue;
+            }
+        }
+        if let Err(e) = cache::refresh_to(&cache_dir, &hub.index_url, cache::http_fetch) {
+            eprintln!("warning: failed to refresh '{}': {e}", hub.id);
+        }
+    }
+    Ok(())
 }
 
 pub fn refresh_all_with(

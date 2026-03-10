@@ -145,6 +145,9 @@ pub enum HubAction {
     Refresh {
         /// Hub identifier to refresh. Refreshes all enabled hubs if omitted.
         id: Option<String>,
+        /// Force refresh by deleting cache directory before fetching.
+        #[arg(long)]
+        force: bool,
     },
 }
 

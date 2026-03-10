@@ -131,13 +131,21 @@ fn main() -> Result<()> {
                 println!("✓ Disabled hub '{id}'");
             }
 
-            HubAction::Refresh { id } => match id {
+            HubAction::Refresh { id, force } => match id {
                 Some(id) => {
-                    hub::registry::refresh_one(&cfg_path, &id)?;
+                    if force {
+                        hub::registry::refresh_one_force(&cfg_path, &id)?;
+                    } else {
+                        hub::registry::refresh_one(&cfg_path, &id)?;
+                    }
                     println!("✓ Refreshed hub '{id}'");
                 }
                 None => {
-                    hub::registry::refresh_all(&cfg_path)?;
+                    if force {
+                        hub::registry::refresh_all_force(&cfg_path)?;
+                    } else {
+                        hub::registry::refresh_all(&cfg_path)?;
+                    }
                     println!("✓ Refreshed all enabled hubs");
                 }
             },
