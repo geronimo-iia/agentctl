@@ -123,6 +123,13 @@ pub fn install(
     Ok(())
 }
 
+pub fn export(lp: &Path) -> Result<()> {
+    let lock = LockFile::load(lp)?;
+    let json = serde_json::to_string_pretty(&lock)?;
+    println!("{}", json);
+    Ok(())
+}
+
 pub fn list(lp: &Path) -> Result<()> {
     let lock = LockFile::load(lp)?;
     if lock.skills.is_empty() {

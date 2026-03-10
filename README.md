@@ -140,6 +140,9 @@ agentctl skill update python-scaffold --force
 
 # update all installed skills
 agentctl skill update
+
+# export current skill installations for backup/sharing
+agentctl skill export > skills.lock.json
 ```
 
 **Global flags:**

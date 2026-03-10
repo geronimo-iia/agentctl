@@ -13,12 +13,13 @@ last_updated: "2026-07-16"
 
 ## Current Status
 
-agentctl has successfully delivered core functionality through Phase 4.5:
+agentctl has successfully delivered core functionality through Phase 5:
 - ✅ Hub validation and index generation (v0.1.0)
 - ✅ Hub registry with caching (v0.2.0) 
 - ✅ Skill management with lifecycle execution (v0.3.0)
 - ✅ Config management commands (v0.4.0)
 - ✅ Enhanced ignore patterns (v0.4.1)
+- ✅ Skill export (v0.5.0)
 
 ## Completed Phases
 
@@ -28,32 +29,7 @@ Detailed documentation for completed phases is available in the archive:
 - [Phase 3 — Skill Management](archive/phase-3-skill-management.md)
 - [Phase 4 — Config Management](archive/phase-4-config-management.md)
 - [Phase 4.5 — Enhanced Ignore Patterns](archive/phase-4.5-enhanced-ignore.md)
-
----
-
-## Phase 5 — Skill Export
-
-**Goal**: Export current skill installations for backup and sharing.
-
-### Commands
-
-```
-agentctl skill export > skills.lock.json             # export current lock file
-```
-
-### Implementation
-
-- Export copies existing `skills.lock.json` to stdout
-- Uses existing lock file format for compatibility
-- Simple file copy operation with JSON formatting
-
-### Exit criteria
-
-- [ ] `agentctl skill export` outputs current lock file JSON to stdout
-- [ ] Export uses existing lock file format for reproducibility
-- [ ] Tests covering export functionality
-- [ ] `cargo fmt`, `cargo clippy -- -D warnings`, `cargo audit` pass
-- [ ] `CHANGELOG.md` updated, tag `v0.5.0` → release per [release process](docs/release.md)
+- [Phase 5 — Skill Export](archive/phase-5-skill-export.md)
 
 ---
 
