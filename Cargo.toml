@@ -31,7 +31,7 @@ git2 = { version = "0.20", default-features = false, features = ["vendored-libgi
 anyhow = "1"
 chrono = { version = "0.4", features = ["serde"] }
 ureq = { version = "2", features = ["json"] }
-toml = "0.8"
+toml = "1.0"
 dirs = "5"
 
 [dev-dependencies]
