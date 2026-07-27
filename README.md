@@ -1,7 +1,12 @@
 # agentctl
 
-CLI for agent hub validation, index generation, and skill management.
-Implements the hub formats defined in [agent-foundation](https://github.com/geronimo-iia/agent-foundation).
+> **Archived (2026-07)** — This project is no longer maintained. It was an early exploration into agent skill management before native tooling (Claude Code, Superpowers) made this approach redundant. The hub validation and index generation CLI still works, but no further development is planned.
+>
+> A skill documenting the CLI commands is available in [skills/SKILL.md](skills/SKILL.md).
+
+Package manager for AI agent skills and knowledge hubs. Install skills into your AI workspace, validate hub formats, and manage multiple hub sources — like npm but for agent behavior.
+
+Implements the hub protocols defined in [agent-foundation](https://github.com/geronimo-iia/agent-foundation). Works with any AI-enabled IDE or assistant that loads context from the filesystem.
 
 See [docs/roadmap.md](docs/roadmap.md) for current development plans and upcoming features.
 
